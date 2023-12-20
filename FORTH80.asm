@@ -12,10 +12,16 @@
 ; *                  i8080 & CP/M-80 ver. 2.2                  *
 ; *                                                            *
 ; *                                                            *
+; *                       Version 0.4.2                        *
+; *                                                            *
+; *                                                            *
 ; *                                            (C) 2023 Tsugu  *
 ; *                                                            *
 ; *                                                            *
-; *                       Version 0.4.1                        *
+; *            This software is released under the             *
+; *                                                            *
+; *                        MIT License.                        *
+; *     (https://opensource.org/licenses/mit-license.php)      *
 ; *                                                            *
 ; *                                                            *
 ; **************************************************************
@@ -3634,7 +3640,7 @@ ABORT:	DW	DOCOL
 ;-------------------------------------------
 	DW	CR
 	DW	PDOTQ
-	DB	18,'FORTH80 Ver. 0.4.1'
+	DB	18,'FORTH80 Ver. 0.4.2'
 ;-------------------------------------------
 	DW	SPSTO
 	DW	DECA
