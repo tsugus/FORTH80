@@ -4,7 +4,6 @@ Thumbs.db
 main.dSYM/
 *.o
 *.a
-*.exe
 *.out
 main
 FORTH80.bat
