@@ -13,7 +13,7 @@
 /*                                                            */
 /*                        for Windowa                         */
 /*                                                            */
-/*                       Version 0.5.4                        */
+/*                       Version 0.5.5                        */
 /*                                                            */
 /*                                       (C) 2023-2024 Tsugu  */
 /*                                                            */
@@ -35,6 +35,7 @@
 #define UVR 0x000E
 #define UP 0x7BB8
 #define SECTOR_SIZE 512
+#define PADSZ 80
 
 unsigned char Memory[LIMIT] = {0};
 int PC = 0;                   // Program Counter
@@ -685,6 +686,26 @@ void DOCREA()
   NEXT();
 }
 
+// #61 (3Ch)
+void SYSTEM()
+{
+  unsigned short a = pop();
+  int n = Memory[a];
+  printf("\n");
+  if (n < PADSZ)
+  {
+    char str[PADSZ];
+    int i = 0;
+    for (i = 0; i < Memory[a]; i++)
+      str[i] = Memory[a + i + 1];
+    str[i] = '\0';
+    system(str);
+  }
+  else
+    printf("Abort. This command exceeds %d characters.\n", PADSZ - 1);
+  NEXT();
+}
+
 // 90h
 void NOP()
 {
@@ -919,6 +940,9 @@ int main(int argc, char *argv[])
       break;
     case 60: // BYE
       loopf = 0;
+      break;
+    case 61:
+      SYSTEM();
       break;
     case 0x90:
       NOP();
