@@ -5,6 +5,8 @@ main.dSYM/
 *.o
 *.a
 *.out
+*.comm
+*.COM
 main
 FORTH80.bat
 FORTH80.command
