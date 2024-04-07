@@ -11,9 +11,9 @@
 /*                 A FORTH langage proccessor                 */
 /*               conformiting FORTH-79 Standard               */
 /*                                                            */
-/*                        for Windowa                         */
+/*                        for Windows                         */
 /*                                                            */
-/*                       Version 0.5.5                        */
+/*                       Version 0.5.6                        */
 /*                                                            */
 /*                                       (C) 2023-2024 Tsugu  */
 /*                                                            */
@@ -35,14 +35,13 @@
 #define UVR 0x000E
 #define UP 0x7BB8
 #define SECTOR_SIZE 512
-#define PADSZ 80
 
 unsigned char Memory[LIMIT] = {0};
 int PC = 0;                   // Program Counter
 unsigned short IP, SP, RP, W; // "Register"
 unsigned short AX, BX, CX;    // "Register"
 
-FILE *printout;
+FILE *printout, *cmdfp;
 
 unsigned short read_word(int n)
 {
@@ -113,14 +112,25 @@ int stdin_flag = 0;
 // #4 (environment dependent)
 void CIN()
 {
-  if (stdin_flag)
-    AX = (unsigned short)getchar();
-  else
+  switch (stdin_flag)
   {
+  case 0:
     AX = (unsigned short)getch();
     if (AX == 0x0D)
       AX = 0x0A;
+    break;
+  case 1:
+    AX = (unsigned short)getchar();
+    break;
+  default:
+    AX = (unsigned short)getc(cmdfp);
+    if (feof(cmdfp))
+    {
+      stdin_flag -= 2;
+      pclose(cmdfp);
+    }
   }
+
   AX &= 0x00FF;
   APUSH();
 }
@@ -687,22 +697,27 @@ void DOCREA()
 }
 
 // #61 (3Ch)
-void SYSTEM()
+void POPENRCLOSE()
 {
   unsigned short a = pop();
-  int n = Memory[a];
   printf("\n");
-  if (n < PADSZ)
+  char str[256];
+  int i = 0;
+  for (i = 0; i < Memory[a]; i++)
+    str[i] = Memory[a + i + 1];
+  str[i] = '\0';
+
+  if ((cmdfp = popen(str, "r")) == NULL)
   {
-    char str[PADSZ];
-    int i = 0;
-    for (i = 0; i < Memory[a]; i++)
-      str[i] = Memory[a + i + 1];
-    str[i] = '\0';
-    system(str);
+    perror("can not exec commad");
+    //    exit(EXIT_FAILURE);
   }
   else
-    printf("Abort. This command exceeds %d characters.\n", PADSZ - 1);
+  {
+    if (!feof(cmdfp) && stdin_flag < 2)
+      stdin_flag += 2;
+  }
+
   NEXT();
 }
 
@@ -942,7 +957,7 @@ int main(int argc, char *argv[])
       loopf = 0;
       break;
     case 61:
-      SYSTEM();
+      POPENRCLOSE();
       break;
     case 0x90:
       NOP();

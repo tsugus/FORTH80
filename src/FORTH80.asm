@@ -11,7 +11,7 @@
 ; *                                                            *
 ; *                     in MASM Assembly                       *
 ; *                                                            *
-; *                       Version 0.5.5                        *
+; *                       Version 0.5.6                        *
 ; *                                                            *
 ; *                                       (C) 2023-2024 Tsugu  *
 ; *                                                            *
@@ -161,7 +161,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	5		; (revision No.)
-	DW	0500H		; (user version)
+	DW	0600H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -3382,14 +3382,14 @@ BYE	DW	$+2
 ;
 ; ( a --- )
 ; #61
-	DB	86H,'SYSTE','M'+80H
+	DB	8BH,'POPENRCLOS','E'+80H
 	DW	BYE-6
-SYSTEM	DW	$+2
-	DB	61		; Call system(a+1).
+POPENR	DW	$+2
+	DB	61		; Call popen(a,"r") and pclose(fp).
 ;
 ; ( --- n )
 	DB	84H,'LIS','T'+80H
-	DW	SYSTEM-9
+	DW	POPENR-14
 LIST	DW	DOCOL
 	DW	BASE
 	DW	ATT
