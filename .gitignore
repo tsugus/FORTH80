@@ -5,8 +5,10 @@ main.dSYM/
 *.o
 *.a
 *.out
-*.comm
+*.com
 *.COM
 main
-FORTH80.bat
-FORTH80.command
+*.bat
+*.command
+input.txt
+output.txt
