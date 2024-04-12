@@ -11,7 +11,7 @@
 ; *                                                            *
 ; *                     in MASM Assembly                       *
 ; *                                                            *
-; *                       Version 0.5.6                        *
+; *                       Version 0.5.7                        *
 ; *                                                            *
 ; *                                       (C) 2023-2024 Tsugu  *
 ; *                                                            *
@@ -39,7 +39,7 @@
 ;               |   .   |
 ;               |   .   |
 ;               |=======|
-;       LIT-6 ->| 005AH |     start of dictionary
+;       LIT-6 ->| 005CH |     start of dictionary
 ;               |   .   |
 ;               |   .   |
 ;      INITDP ->| ????H |     initial position of DP
@@ -161,7 +161,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	5		; (revision No.)
-	DW	0600H		; (user version)
+	DW	0700H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -186,6 +186,7 @@ UVR	DW	0		; (release No.)
 	DW	0		; HLD
 	DW	0		; PFLAG
 	DW	0		; UTF-8
+	DW	1		; ECHO
 ;
 ; ***** INTERFACE *****
 ; take a type-state of keybord
@@ -642,7 +643,7 @@ DOCREA	DB	59
 COLD	DW	DOCOL
 	DW	LIT,UVR		; Set user variables.
 	DW	UPP		; UP ( constant )
-	DW	LIT,54		; 54 ( 27 variables * 2 bytes )
+	DW	LIT,56		; 56 ( 28 variables * 2 bytes )
 	DW	CMOVEE
 	DW	EMPBUF
 	DW	ABORT
@@ -672,7 +673,7 @@ QTERM	DW	DOCOL
 	DB	84H,'EMI','T'+80H
 	DW	QTERM-12
 EMIT	DW	DOCOL
-;	DW	DUP	  (-)
+;	DW	DUPE	  (-)
 ;	DW	COUT	  (-)
 	DW	PFLAG		; print flag
 	DW	ATT
@@ -1027,6 +1028,13 @@ PFLAG	DW	DOUSE
 UTF8	DW	DOUSE
 	DW	34H
 ;
+; ( --- n )
+; The flag to echo input or not.
+	DB	84H,'ECH','O'+80H
+	DW	UTF8-8
+ECHOO	DW	DOUSE
+	DW	36H
+;
 ; 	===== normal words =====
 ;
 ; ( a c --- a n1 n2 n3 )
@@ -1036,7 +1044,7 @@ UTF8	DW	DOUSE
 ; n2: offset to the first delimiter after text
 ; n3: offset to the first character not included
 	DB	87H,'ENCLOS','E'+80H
-	DW	UTF8-8
+	DW	ECHOO-7
 ENCL	DW	DOCOL
 	DW	OVER
 	DW	DUPE
@@ -2705,8 +2713,17 @@ EXPEC5	DW	IDO
 	DW	ONEP
 	DW	STORE
 				;  THEN
-EXPEC3	DW	EMIT		;  ( originally "EMIT" )
-	DW	XLOOP,EXPEC1-$	; LOOP
+	; ADDITIONAL PART
+EXPEC3	DW	ECHOO
+	DW	ATT
+	DW	ZBRAN,EXPE11-$	;  IF
+	;
+	DW	EMIT
+	; ADDITIONAL PART
+	DW	BRAN,EXPE12-$	;  ELSE
+EXPE11	DW	DROP
+	;			;  THEN
+EXPE12	DW	XLOOP,EXPEC1-$	; LOOP
 	DW	DROP
 	DW	SEMIS
 ;
@@ -3090,29 +3107,29 @@ ABORT	DW	DOCOL
 	DW	PDOTQ
 	DB	13,'FORTH80 Ver. '
 	DW	TUVR
-	DW	ATT		; release No.
-	DW	ZERO,ZERO,DDOTR	; U. without spaces
-	DW	LIT,2EH		; '.' code
+	DW	ATT		; ( release No. )
+	DW	ZERO,ZERO,DDOTR	; ( U. without spaces )
+	DW	LIT,2EH		; ( '.' code )
 	DW	EMIT
 	DW	TUVR
 	DW	LIT,2
 	DW	PLUS
-	DW	ATT		; revision No.
+	DW	ATT		; ( revision No. )
 	DW	ZERO,ZERO,DDOTR
 	; ----- OPTIONAL -----
-	DW	LIT,2EH		; '.' code
+	DW	LIT,2EH		; ( '.' code )
 	DW	EMIT
 	DW	TUVR
 	DW	LIT,5
 	DW	PLUS
-	DW	CAT		; major user version (0-255)
+	DW	CAT		; ( major user version [0-255] )
 	DW	ZERO,ZERO,DDOTR
 	; --------------------
 	DW	TUVR
 	DW	LIT,4
 	DW	PLUS
-	DW	CAT		; user version (0-25)
-	DW	LIT,41H		; 'A' code
+	DW	CAT		; ( user version [0-25] )
+	DW	LIT,41H		; ( 'A' code )
 	DW	PLUS
 	DW	EMIT
 ;-------------------------------------------

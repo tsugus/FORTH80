@@ -13,7 +13,7 @@
 /*                                                            */
 /*                          for Mac                           */
 /*                                                            */
-/*                       Version 0.5.6                        */
+/*                       Version 0.5.7                        */
 /*                                                            */
 /*                                       (C) 2023-2024 Tsugu  */
 /*                                                            */
@@ -696,11 +696,16 @@ void DOCREA()
   NEXT();
 }
 
-// #61 (3Ch)
+// #60 (3Ch)
+void BYE()
+{
+  exit(EXIT_SUCCESS);
+}
+
+// #61 (3Dh)
 void POPENRCLOSE()
 {
   unsigned short a = pop();
-  printf("\n");
   char str[256];
   int i = 0;
   for (i = 0; i < Memory[a]; i++)
@@ -708,10 +713,7 @@ void POPENRCLOSE()
   str[i] = '\0';
 
   if ((cmdfp = popen(str, "r")) == NULL)
-  {
     perror("can not exec commad");
-    //    exit(EXIT_FAILURE);
-  }
   else
   {
     if (!feof(cmdfp) && stdin_flag < 2)
@@ -735,6 +737,72 @@ void JMP()
 
 /****************************************/
 
+void (*func_table[])() = {
+    NULL,
+    CLD_,
+    WRM,
+    CTST,
+    CIN,
+    COUT,
+    POUT,
+    READ,
+    WRITE,
+    WPUSH,
+    APUSH,
+    NEXT,
+    NEXT1,
+    LIT,
+    EXEC,
+    BRAN,
+    ZBRAN,
+    XLOOP,
+    XPLOO,
+    XDO,
+    ANDD,
+    ORR,
+    XORR,
+    SPAT,
+    SPSTO,
+    RPAT,
+    RPSTO,
+    SEMIS,
+    TOR,
+    FROMR,
+    RAT,
+    ZEQU,
+    ZLESS,
+    PLUS,
+    SUBB,
+    DPLUS,
+    DSUB,
+    OVER,
+    DROP,
+    SWAP,
+    DUPE,
+    ROT,
+    USTAR,
+    USLAS,
+    TDIV,
+    TOGGL,
+    ATT,
+    STORE,
+    CSTOR,
+    CMOVE,
+    LCMOVE,
+    FILL,
+    DOCOL,
+    DOCON,
+    DOVAR,
+    DOTCON,
+    DOTVAR,
+    DOUSE,
+    XDOES,
+    DOCREA,
+    BYE,
+    POPENRCLOSE};
+
+/****************************************/
+
 int main(int argc, char *argv[])
 {
   FILE *fp = NULL;
@@ -750,12 +818,15 @@ int main(int argc, char *argv[])
   fread(Memory, sizeof(unsigned char), sizeof(Memory) / sizeof(Memory[0]), fp);
   fclose(fp);
 
-  Memory[UVR + 26 * 2] = 1; // the initial value of the user variable "UTF-8"
+  Memory[UVR + 26 * 2] = 1; // the initial value of "UTF-8"
 
   if (argc > 1)
   {
     if (!strcmp(argv[1], "-s"))
+    {
       stdin_flag = 1;
+      Memory[UVR + 27 * 2] = 0; // the initial value of "ECHO"
+    }
     if (!strcmp(argv[1], "-h"))
     {
       printf("\noption\n\n");
@@ -768,208 +839,21 @@ int main(int argc, char *argv[])
     }
   }
 
-  int loopf = 1;
-  do
+  while (1)
   {
-    switch (Memory[PC])
-    {
-    case 0:
-      loopf = 0;
-      break;
-    case 1:
-      CLD_();
-      break;
-    case 2:
-      WRM();
-      break;
-    case 3:
-      CTST();
-      break;
-    case 4:
-      CIN();
-      break;
-    case 5:
-      COUT();
-      break;
-    case 6:
-      POUT();
-      break;
-    case 7:
-      READ();
-      break;
-    case 8:
-      WRITE();
-      break;
-    case 9:
-      WPUSH();
-      break;
-    case 10:
-      APUSH();
-      break;
-    case 11:
-      NEXT();
-      break;
-    case 12:
-      NEXT1();
-      break;
-    case 13:
-      LIT();
-      break;
-    case 14:
-      EXEC();
-      break;
-    case 15:
-      BRAN();
-      break;
-    case 16:
-      ZBRAN();
-      break;
-    case 17:
-      XLOOP();
-      break;
-    case 18:
-      XPLOO();
-      break;
-    case 19:
-      XDO();
-      break;
-    case 20:
-      ANDD();
-      break;
-    case 21:
-      ORR();
-      break;
-    case 22:
-      XORR();
-      break;
-    case 23:
-      SPAT();
-      break;
-    case 24:
-      SPSTO();
-      break;
-    case 25:
-      RPAT();
-      break;
-    case 26:
-      RPSTO();
-      break;
-    case 27:
-      SEMIS();
-      break;
-    case 28:
-      TOR();
-      break;
-    case 29:
-      FROMR();
-      break;
-    case 30:
-      RAT();
-      break;
-    case 31:
-      ZEQU();
-      break;
-    case 32:
-      ZLESS();
-      break;
-    case 33:
-      PLUS();
-      break;
-    case 34:
-      SUBB();
-      break;
-    case 35:
-      DPLUS();
-      break;
-    case 36:
-      DSUB();
-      break;
-    case 37:
-      OVER();
-      break;
-    case 38:
-      DROP();
-      break;
-    case 39:
-      SWAP();
-      break;
-    case 40:
-      DUPE();
-      break;
-    case 41:
-      ROT();
-      break;
-    case 42:
-      USTAR();
-      break;
-    case 43:
-      USLAS();
-      break;
-    case 44:
-      TDIV();
-      break;
-    case 45:
-      TOGGL();
-      break;
-    case 46:
-      ATT();
-      break;
-    case 47:
-      STORE();
-      break;
-    case 48:
-      CSTOR();
-      break;
-    case 49:
-      CMOVE();
-      break;
-    case 50:
-      LCMOVE();
-      break;
-    case 51:
-      FILL();
-      break;
-    case 52:
-      DOCOL();
-      break;
-    case 53:
-      DOCON();
-      break;
-    case 54:
-      DOVAR();
-      break;
-    case 55:
-      DOTCON();
-      break;
-    case 56:
-      DOTVAR();
-      break;
-    case 57:
-      DOUSE();
-      break;
-    case 58:
-      XDOES();
-      break;
-    case 59:
-      DOCREA();
-      break;
-    case 60: // BYE
-      loopf = 0;
-      break;
-    case 61:
-      POPENRCLOSE();
-      break;
-    case 0x90:
-      NOP();
-      break;
-    case 0xE9:
+    int opecode = Memory[PC];
+    if (opecode == 0xE9)
       JMP();
+    else if (1 <= opecode && opecode <= 61)
+      (*func_table[opecode])();
+    else if (opecode == 0x90)
+      NOP();
+    else
+    {
+      printf("%02X: undefined code.\n", opecode);
       break;
-    default:
-      printf("%02X: undefined code.\n", Memory[PC]);
-      loopf = 0;
     }
-  } while (loopf);
+  }
 
   fclose(printout);
 
