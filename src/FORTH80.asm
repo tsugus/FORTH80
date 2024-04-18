@@ -11,7 +11,7 @@
 ; *                                                            *
 ; *                     in MASM Assembly                       *
 ; *                                                            *
-; *                       Version 0.5.7                        *
+; *                       Version 0.5.8                        *
 ; *                                                            *
 ; *                                       (C) 2023-2024 Tsugu  *
 ; *                                                            *
@@ -161,7 +161,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	5		; (revision No.)
-	DW	0700H		; (user version)
+	DW	0800H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -673,15 +673,14 @@ QTERM	DW	DOCOL
 	DB	84H,'EMI','T'+80H
 	DW	QTERM-12
 EMIT	DW	DOCOL
-;	DW	DUPE	  (-)
-;	DW	COUT	  (-)
+	DW	DUPE
+	DW	COUT
 	DW	PFLAG		; print flag
 	DW	ATT
 	DW	ZBRAN,EMIT1-$	; IF
 	DW	POUT
 	DW	BRAN,EMIT2-$	; ELSE
-;EMIT1	DW	DROP	  (-)
-EMIT1	DW	COUT	; (+)
+EMIT1	DW	DROP
 				; THEN
 EMIT2	DW	SEMIS
 ;
@@ -3399,14 +3398,35 @@ BYE	DW	$+2
 ;
 ; ( a --- )
 ; #61
-	DB	8BH,'POPENRCLOS','E'+80H
+	DB	86H,'POPEN','R'+80H
 	DW	BYE-6
 POPENR	DW	$+2
-	DB	61		; Call popen(a,"r") and pclose(fp).
+	DB	61		; Call popen(a,"r").
+;
+; ( a --- )
+; #62
+	DB	86H,'POPEN','W'+80H
+	DW	POPENR-9
+POPENW	DW	$+2
+	DB	62		; Call popen(a,"w").
+;
+; ( --- )
+; #63
+	DB	87H,'PCLOSE','R'+80H
+	DW	POPENW-9
+PCLOSR	DW	$+2
+	DB	63		; Call pclose(rfp).
+;
+; ( --- )
+; #64
+	DB	87H,'PCLOSE','W'+80H
+	DW	PCLOSR-10
+PCLOSW	DW	$+2
+	DB	64		; Call pclose(wfp).
 ;
 ; ( --- n )
 	DB	84H,'LIS','T'+80H
-	DW	POPENR-14
+	DW	PCLOSW-10
 LIST	DW	DOCOL
 	DW	BASE
 	DW	ATT

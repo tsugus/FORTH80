@@ -13,7 +13,7 @@
 /*                                                            */
 /*                          for Mac                           */
 /*                                                            */
-/*                       Version 0.5.7                        */
+/*                       Version 0.5.8                        */
 /*                                                            */
 /*                                       (C) 2023-2024 Tsugu  */
 /*                                                            */
@@ -35,13 +35,17 @@
 #define UVR 0x000E
 #define UP 0x7BB8
 #define SECTOR_SIZE 512
+#define CHANGE_TO_2_OR_3(x) ((x) += (x) < 2 ? 2 : 0)
+#define CHANGE_TO_0_OR_1(x) ((x) -= (x) > 1 ? 2 : 0)
 
 unsigned char Memory[LIMIT] = {0};
 int PC = 0;                   // Program Counter
 unsigned short IP, SP, RP, W; // "Register"
 unsigned short AX, BX, CX;    // "Register"
 
-FILE *printout, *cmdfp;
+int stdin_flag = 0;
+FILE *infp = NULL, *outfp = NULL;
+FILE **infpp = &stdin, **outfpp = &stdout;
 
 unsigned short read_word(int n)
 {
@@ -107,28 +111,30 @@ void CTST()
   APUSH();
 }
 
-int stdin_flag = 0;
-
 // #4 (environment dependent)
 void CIN()
 {
-  switch (stdin_flag)
+  if (infp != NULL)
   {
-  case 0:
+    if (feof(infp))
+    {
+      infpp = &stdin;
+      CHANGE_TO_0_OR_1(stdin_flag);
+    }
+    else
+    {
+      infpp = &infp;
+      CHANGE_TO_2_OR_3(stdin_flag);
+    }
+  }
+
+  if (stdin_flag)
+    AX = (unsigned short)getc(*infpp);
+  else
+  {
     AX = (unsigned short)getch();
     if (AX == 0x7F) // for Mac
       AX = 0x08;    // fix of backspace key code
-    break;
-  case 1:
-    AX = (unsigned short)getchar();
-    break;
-  default:
-    AX = (unsigned short)getc(cmdfp);
-    if (feof(cmdfp))
-    {
-      stdin_flag -= 2;
-      pclose(cmdfp);
-    }
   }
 
   AX &= 0x00FF;
@@ -145,7 +151,7 @@ void COUT()
 // #6 (environment dependent)
 void POUT()
 {
-  putchar(pop());
+  putc(pop(), *outfpp);
   NEXT();
 }
 
@@ -703,22 +709,94 @@ void BYE()
 }
 
 // #61 (3Dh)
-void POPENRCLOSE()
+void POPENR()
 {
   unsigned short a = pop();
   char str[256];
-  int i = 0;
-  for (i = 0; i < Memory[a]; i++)
-    str[i] = Memory[a + i + 1];
-  str[i] = '\0';
 
-  if ((cmdfp = popen(str, "r")) == NULL)
-    perror("can not exec commad");
-  else
+  for (int i = 0; i < Memory[a]; i++)
+    str[i] = Memory[a + i + 1];
+  str[Memory[a]] = '\0';
+
+  if (infp == NULL)
   {
-    if (!feof(cmdfp) && stdin_flag < 2)
-      stdin_flag += 2;
+    if (str[0] == '\0' && outfp != NULL) // If the length of the original string is zero or the first character is a null character, and if ...
+    {
+      infp = outfp;
+      infpp = &infp;
+      CHANGE_TO_2_OR_3(stdin_flag);
+    }
+    else if ((infp = popen(str, "r+")) != NULL)
+    {
+      infpp = &infp;
+      CHANGE_TO_2_OR_3(stdin_flag);
+    }
+    else
+      perror("can not exec commad");
   }
+  else
+    perror("Another process has not been closed");
+
+  NEXT();
+}
+
+// 62 (3Eh)
+void POPENW()
+{
+  unsigned short a = pop();
+  char str[256];
+
+  for (int i = 0; i < Memory[a]; i++)
+    str[i] = Memory[a + i + 1];
+  str[Memory[a]] = '\0';
+
+  if (outfp == NULL)
+  {
+    if (str[0] == '\0' && infp != NULL) // If the length of the original string is zero or the first character is a null character, and if ...
+    {
+      outfp = infp;
+      outfpp = &outfp;
+    }
+    else if ((outfp = popen(str, "r+")) != NULL)
+      outfpp = &outfp;
+    else
+      perror("can not exec commad");
+  }
+  else
+    perror("Another subprocess has not been closed");
+
+  NEXT();
+}
+
+// 63 (3Fh)
+void PCLOSR()
+{
+  if (infp != NULL)
+  {
+    if (infp != outfp)
+      pclose(infp); // Close only when the output side is not using the same process.
+    infp = NULL;
+    infpp = &stdin;
+    CHANGE_TO_0_OR_1(stdin_flag);
+  }
+  else
+    fprintf(stderr, "No subprocess has not been closed. ");
+
+  NEXT();
+}
+
+// 64 (40h)
+void PCLOSW()
+{
+  if (outfp != NULL)
+  {
+    if (outfp != infp)
+      pclose(outfp); // Close only when the input side is not using the same process.
+    outfp = NULL;
+    outfpp = &stdout;
+  }
+  else
+    fprintf(stderr, "No subprocess has not been closed. ");
 
   NEXT();
 }
@@ -799,7 +877,10 @@ void (*func_table[])() = {
     XDOES,
     DOCREA,
     BYE,
-    POPENRCLOSE};
+    POPENR,
+    POPENW,
+    PCLOSR,
+    PCLOSW};
 
 /****************************************/
 
@@ -844,18 +925,16 @@ int main(int argc, char *argv[])
     int opecode = Memory[PC];
     if (opecode == 0xE9)
       JMP();
-    else if (1 <= opecode && opecode <= 61)
+    else if (1 <= opecode && opecode <= 64)
       (*func_table[opecode])();
     else if (opecode == 0x90)
       NOP();
     else
     {
-      printf("%02X: undefined code.\n", opecode);
+      fprintf(stderr, "%02X: undefined code.\n", opecode);
       break;
     }
   }
-
-  fclose(printout);
 
   return 0;
 }
