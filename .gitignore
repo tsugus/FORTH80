@@ -10,5 +10,5 @@ main.dSYM/
 main
 *.bat
 *.command
-input.txt
-output.txt
+in.txt
+out.txt
