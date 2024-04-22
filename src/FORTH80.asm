@@ -11,7 +11,7 @@
 ; *                                                            *
 ; *                     in MASM Assembly                       *
 ; *                                                            *
-; *                       Version 0.5.8                        *
+; *                       Version 0.5.9                        *
 ; *                                                            *
 ; *                                       (C) 2023-2024 Tsugu  *
 ; *                                                            *
@@ -161,7 +161,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	5		; (revision No.)
-	DW	0800H		; (user version)
+	DW	0900H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -3155,6 +3155,7 @@ MESS	DW	DOCOL
 	DW	SLASH
 	DW	SUBB
 	DW	DLINE
+	DW	SPACE
 				;  THEN
 MESS3	DW	BRAN,MESS2-$	; ELSE
 MESS1	DW	PDOTQ
@@ -3287,7 +3288,6 @@ PCREAT	DW	DOCOL
 	DW	IDDOT
 	DW	LIT,4H
 	DW	MESS
-	DW	SPACE
 				; THEN
 PCREA1	DW	HERE
 	DW	DUPE
