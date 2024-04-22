@@ -13,7 +13,7 @@
 /*                                                            */
 /*                        for Windows                         */
 /*                                                            */
-/*                       Version 0.5.9                        */
+/*                       Version 0.6.0                        */
 /*                                                            */
 /*                                       (C) 2023-2024 Tsugu  */
 /*                                                            */
@@ -35,28 +35,13 @@
 #define UVR 0x000E
 #define UP 0x7BB8
 #define SECTOR_SIZE 512
-#define CHANGE_TO_2_OR_3(x) ((x) += (x) < 2 ? 2 : 0)
-#define CHANGE_TO_0_OR_1(x) ((x) -= (x) > 1 ? 2 : 0)
 
 unsigned char Memory[LIMIT] = {0};
 int PC = 0;                   // Program Counter
 unsigned short IP, SP, RP, W; // "Register"
 unsigned short AX, BX, CX;    // "Register"
 
-int stdin_flag = 0;
 FILE *infp = NULL, *outfp = NULL;
-FILE *my_stdin, *my_stdout; // for Windows
-FILE **infpp = &my_stdin, **outfpp = &my_stdout;
-
-int my_getc(FILE *fp) // for Windows
-{
-  return fp == my_stdin ? getc(stdin) : getc(fp);
-}
-
-int my_putc(int ch, FILE *fp) // for Windows
-{
-  return fp == my_stdout ? putc(ch, stdout) : putc(ch, fp);
-}
 
 unsigned short read_word(int n)
 {
@@ -125,30 +110,18 @@ void CTST()
 // #4 (environment dependent)
 void CIN()
 {
+  AX = 0x00FF & (unsigned short)getch();
+  if (AX == 0x0D)
+    AX = 0x0A;
+  APUSH();
+}
+
+// #61 (3Dh) (environment dependent)
+void STIN()
+{
   if (infp != NULL)
-  {
-    if (feof(infp))
-    {
-      infpp = &my_stdin;
-      CHANGE_TO_0_OR_1(stdin_flag);
-    }
-    else
-    {
-      infpp = &infp;
-      CHANGE_TO_2_OR_3(stdin_flag);
-    }
-  }
-
-  if (stdin_flag)
-    AX = (unsigned short)my_getc(*infpp);
-  else
-  {
-    AX = (unsigned short)getch();
-    if (AX == 0x0D)
-      AX = 0x0A;
-  }
-
-  AX &= 0x00FF;
+    infp = feof(infp) ? stdin : infp;
+  AX = 0x00FF & (unsigned short)getc(infp);
   APUSH();
 }
 
@@ -162,7 +135,7 @@ void COUT()
 // #6 (environment dependent)
 void POUT()
 {
-  my_putc(pop(), *outfpp);
+  putc(pop(), outfp);
   NEXT();
 }
 
@@ -480,9 +453,9 @@ void SUBB()
 void DPLUS()
 {
   unsigned int d2 = pop();
-  d2 = (d2 << 16) | pop();
+  d2 = d2 << 16 | pop();
   unsigned int d1 = pop();
-  d1 = (d1 << 16) | pop();
+  d1 = d1 << 16 | pop();
   d1 += d2;
   W = d1;
   AX = d1 >> 16;
@@ -493,9 +466,9 @@ void DPLUS()
 void DSUB()
 {
   unsigned int d2 = pop();
-  d2 = (d2 << 16) | pop();
+  d2 = d2 << 16 | pop();
   unsigned int d1 = pop();
-  d1 = (d1 << 16) | pop();
+  d1 = d1 << 16 | pop();
   d1 -= d2;
   W = d1;
   AX = d1 >> 16;
@@ -579,7 +552,7 @@ void USLAS()
 void TDIV()
 {
   AX = pop();
-  AX = (0x8000 & AX) | (AX >> 1);
+  AX = 0x8000 & AX | AX >> 1;
   APUSH();
 }
 
@@ -719,95 +692,77 @@ void BYE()
   exit(EXIT_SUCCESS);
 }
 
-// #61 (3Dh)
-void POPENR()
+// #62 (3Eh)
+void POPEN()
 {
-  unsigned short a = pop();
-  char str[256];
+  unsigned short a2 = pop();
+  unsigned short a1 = pop();
+  char command[256], mode[3];
+  FILE *r;
 
-  for (int i = 0; i < Memory[a]; i++)
-    str[i] = Memory[a + i + 1];
-  str[Memory[a]] = '\0';
+  for (int i = 0; i < Memory[a1]; i++)
+    command[i] = Memory[a1 + i + 1];
+  command[Memory[a1]] = '\0';
 
-  if (infp == NULL)
-  {
-    if (str[0] == '\0' && outfp != NULL) // If the length of the original string is zero or the first character is a null character, and if ...
-    {
-      infp = outfp;
-      infpp = &infp;
-      CHANGE_TO_2_OR_3(stdin_flag);
-    }
-    else if ((infp = popen(str, "r")) != NULL)
-    {
-      infpp = &infp;
-      CHANGE_TO_2_OR_3(stdin_flag);
-    }
-    else
-      perror("can not exec commad");
-  }
-  else
-    perror("Another process has not been closed");
+  int max = Memory[a2] > 2 ? 2 : Memory[a2];
+  for (int i = 0; i < max; i++)
+    mode[i] = Memory[a2 + i + 1];
+  mode[max] = '\0';
 
-  NEXT();
-}
+  if ((r = popen(command, mode)) == NULL)
+    perror("can not exec commad");
 
-// 62 (3Eh)
-void POPENW()
-{
-  unsigned short a = pop();
-  char str[256];
-
-  for (int i = 0; i < Memory[a]; i++)
-    str[i] = Memory[a + i + 1];
-  str[Memory[a]] = '\0';
-
-  if (outfp == NULL)
-  {
-    if (str[0] == '\0' && infp != NULL) // If the length of the original string is zero or the first character is a null character, and if ...
-    {
-      outfp = infp;
-      outfpp = &outfp;
-    }
-    else if ((outfp = popen(str, "w")) != NULL)
-      outfpp = &outfp;
-    else
-      perror("can not exec commad");
-  }
-  else
-    perror("Another subprocess has not been closed");
+  push((unsigned long long)r);
+  push((unsigned long long)r >> 16);
+  push((unsigned long long)r >> 32);
+  push((unsigned long long)r >> 48);
 
   NEXT();
 }
 
 // 63 (3Fh)
-void PCLOSR()
+void PCLOSE()
 {
-  if (infp != NULL)
-  {
-    if (infp != outfp)
-      pclose(infp); // Close only when the output side is not using the same process.
-    infp = NULL;
-    infpp = &my_stdin;
-    CHANGE_TO_0_OR_1(stdin_flag);
-  }
-  else
-    fprintf(stderr, "No subprocess has not been closed. ");
+  unsigned long long u4 = pop();
+  unsigned long long u3 = pop();
+  unsigned long long u2 = pop();
+  unsigned long long u1 = pop();
+  int r;
+
+  r = pclose((FILE *)(u4 << 48 | u3 << 32 | u2 << 16 | u1));
+
+  push((unsigned)r);
+  push((unsigned)r >> 16);
 
   NEXT();
 }
 
 // 64 (40h)
-void PCLOSW()
+void SETIN()
 {
-  if (outfp != NULL)
-  {
-    if (outfp != infp)
-      pclose(outfp); // Close only when the input side is not using the same process.
-    outfp = NULL;
-    outfpp = &my_stdout;
-  }
-  else
-    fprintf(stderr, "No subprocess has not been closed. ");
+  unsigned long long u4 = pop();
+  unsigned long long u3 = pop();
+  unsigned long long u2 = pop();
+  unsigned long long u1 = pop();
+
+  FILE *fp = (FILE *)(u4 << 48 | u3 << 32 | u2 << 16 | u1);
+
+  infp = fp == NULL ? stdin : fp;
+
+  NEXT();
+}
+
+// 65 (41h)
+void SETOUT()
+{
+  unsigned long long u4 = pop();
+  unsigned long long u3 = pop();
+  unsigned long long u2 = pop();
+  unsigned long long u1 = pop();
+
+  FILE *fp = (FILE *)(u4 << 48 | u3 << 32 | u2 << 16 | u1);
+
+  outfp = fp == NULL ? stdin : fp;
 
   NEXT();
 }
@@ -888,10 +843,11 @@ void (*func_table[])() = {
     XDOES,
     DOCREA,
     BYE,
-    POPENR,
-    POPENW,
-    PCLOSR,
-    PCLOSW};
+    STIN,
+    POPEN,
+    PCLOSE,
+    SETIN,
+    SETOUT};
 
 /****************************************/
 
@@ -911,24 +867,13 @@ int main(int argc, char *argv[])
   fclose(fp);
 
   Memory[UVR + 26 * 2] = 0; // the initial value of the user variable "UTF-8"
+  infp = stdin, outfp = stdout;
 
   if (argc > 1)
   {
-    if (!strcmp(argv[1], "-s"))
-    {
-      stdin_flag = 1;
-      Memory[UVR + 27 * 2] = 0; // the initial value of "ECHO"
-    }
-    if (!strcmp(argv[1], "-h"))
-    {
-      printf("\noption\n\n");
-      printf("  -h   :   Show the help of options.\n\n");
-      printf("  -s   :   The program use \"stdin\" instead of \"getch()\".\n");
-      printf("           (Note. ");
-      printf("This program uses \"stderr\" as the default output destination. ");
-      printf("To change the output destination to \"stdout\", the value of FORTH's user variable \"PFLAG\" must be set to any non-zero number.)\n\n");
-      return 0;
-    }
+    if (!strcmp(argv[1], "-v"))
+      printf("Virtual Stack Machine for FORTH80 Version 0.6.0\n");
+    return 0;
   }
 
   while (1)
@@ -936,7 +881,7 @@ int main(int argc, char *argv[])
     int opecode = Memory[PC];
     if (opecode == 0xE9)
       JMP();
-    else if (1 <= opecode && opecode <= 64)
+    else if (1 <= opecode && opecode <= 65)
       (*func_table[opecode])();
     else if (opecode == 0x90)
       NOP();

@@ -11,7 +11,7 @@
 ; *                                                            *
 ; *                     in MASM Assembly                       *
 ; *                                                            *
-; *                       Version 0.5.9                        *
+; *                       Version 0.6.0                        *
 ; *                                                            *
 ; *                                       (C) 2023-2024 Tsugu  *
 ; *                                                            *
@@ -160,8 +160,8 @@ WRM1	DW	WARM
 ; ***** USER VARIABLES *****
 ;
 UVR	DW	0		; (release No.)
-	DW	5		; (revision No.)
-	DW	0900H		; (user version)
+	DW	6		; (revision No.)
+	DW	0000H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -187,6 +187,7 @@ UVR	DW	0		; (release No.)
 	DW	0		; PFLAG
 	DW	0		; UTF-8
 	DW	1		; ECHO
+UVREND 	DW	0		; STDIN
 ;
 ; ***** INTERFACE *****
 ; take a type-state of keybord
@@ -197,6 +198,12 @@ CTST	DW	$+2
 ; #4
 CIN	DW	$+2
 	DB	4
+	; ADDITIONAL PART
+; input one character from "stdin"
+; #61
+STIN	DW	$+2
+	DB	61
+	;
 ; output one character to console
 ; #5
 COUT	DW	$+2
@@ -590,7 +597,7 @@ TCON	DW	DOCOL
 	DW	COMMA
 	DW	PSCOD
 ; #55
-DOTCON	DB	55
+	DB	55
 ;
 ; ( --- ) <name>
 	DB	89H,'2VARIABL','E'+80H
@@ -600,7 +607,7 @@ TVAR	DW	DOCOL
 	DW	ZERO
 	DW	COMMA
 ; #56
-DOTVAR	DB	56
+	DB	56
 ;
 ; ( n --- ) <name>
 	DB	84H,'USE','R'+80H
@@ -643,7 +650,7 @@ DOCREA	DB	59
 COLD	DW	DOCOL
 	DW	LIT,UVR		; Set user variables.
 	DW	UPP		; UP ( constant )
-	DW	LIT,56		; 56 ( 28 variables * 2 bytes )
+	DW	LIT,UVREND-UVR+2
 	DW	CMOVEE
 	DW	EMPBUF
 	DW	ABORT
@@ -659,8 +666,16 @@ WARM	DW	DOCOL
 	DB	83H,'KE','Y'+80H
 	DW	WARM-7
 KEY	DW	DOCOL
-	DW	CIN
-	DW	SEMIS
+	; ADDITIONAL PART
+	DW	STDIN
+	DW	ATT
+	DW	ZBRAN,KEY1-$	; IF
+	DW	STIN
+	DW	BRAN,KEY2-$	; ELSE
+	;
+KEY1	DW	CIN
+				;THEN
+KEY2	DW	SEMIS
 ;
 ; ( --- f )
 	DB	89H,'?TERMINA','L'+80H
@@ -1018,7 +1033,7 @@ HLD	DW	DOUSE
 PFLAG	DW	DOUSE
 	DW	32H
 ;
-; 	===== "unofficial" cuser variables =====
+; 	===== "unofficial" user variables =====
 ;
 ; ( --- a )
 ; The flag to whether use UTF-8 multi-byte charcters.
@@ -1027,12 +1042,19 @@ PFLAG	DW	DOUSE
 UTF8	DW	DOUSE
 	DW	34H
 ;
-; ( --- n )
+; ( --- a )
 ; The flag to echo input or not.
 	DB	84H,'ECH','O'+80H
 	DW	UTF8-8
 ECHOO	DW	DOUSE
 	DW	36H
+;
+; ( --- a )
+; The flag to whether use "stdin" or "getch()".
+	DB	85H,'STDI','N'+80H
+	DW	ECHOO-7
+STDIN	DW	DOUSE
+	DW	38H
 ;
 ; 	===== normal words =====
 ;
@@ -1043,7 +1065,7 @@ ECHOO	DW	DOUSE
 ; n2: offset to the first delimiter after text
 ; n3: offset to the first character not included
 	DB	87H,'ENCLOS','E'+80H
-	DW	ECHOO-7
+	DW	STDIN-8
 ENCL	DW	DOCOL
 	DW	OVER
 	DW	DUPE
@@ -3104,7 +3126,7 @@ ABORT	DW	DOCOL
 ;-------------------------------------------
 	DW	CR
 	DW	PDOTQ
-	DB	13,'FORTH80 Ver. '
+	DB	16,'FORTH80 Version '
 	DW	TUVR
 	DW	ATT		; ( release No. )
 	DW	ZERO,ZERO,DDOTR	; ( U. without spaces )
@@ -3389,44 +3411,64 @@ SCODE	DW	DOCOL
 	DW	ASSEM		; [COMPILE] ASSEMBLER
 	DW	SEMIS
 ;
-; ( --- )
+; ( --- ; Exit FORTH. )
 ; #60
 	DB	83H,'BY','E'+80H
 	DW	SCODE-8
 BYE	DW	$+2
-	DB	60		; Exit program.
+	DB	60
 ;
-; ( a --- )
-; #61
-	DB	86H,'POPEN','R'+80H
-	DW	BYE-6
-POPENR	DW	$+2
-	DB	61		; Call popen(a,"r").
-;
-; ( a --- )
+; ( a1 a2 --- ud1 ud2 ; Call popen(a1+1,a2+1) in C-lang. )
 ; #62
-	DB	86H,'POPEN','W'+80H
-	DW	POPENR-9
-POPENW	DW	$+2
-	DB	62		; Call popen(a,"w").
+	DB	85H,'POPE','N'+80H
+	DW	BYE-6
+POPEN	DW	$+2
+	DB	62
 ;
-; ( --- )
+; ( --- a ; for POPEN )
+	DB	83H,'"r','"'+80H
+	DW	POPEN-8
+STR_R	DW	DOVAR
+	DB	1,'r'
+;
+; ( --- a ; for POPEN )
+	DB	83H,'"w','"'+80H
+	DW	STR_R-6
+STR_W	DW	DOVAR
+	DB	1,'w'
+;
+; ( --- a ; for POPEN )
+	DB	84H,'"r+','"'+80H
+	DW	STR_W-6
+STR_RP	DW	DOVAR
+	DB	2,'r+'
+;
+; ( ud1 ud2 --- d ; Call pclose(ud2<<32|ud1) in C-lang. )
 ; #63
-	DB	87H,'PCLOSE','R'+80H
-	DW	POPENW-9
-PCLOSR	DW	$+2
-	DB	63		; Call pclose(rfp).
+	DB	86H,'PCLOS','E'+80H
+	DW	STR_RP-7
+PCLOSE	DW	$+2
+	DB	63
 ;
-; ( --- )
+; ( ud1 ud2 --- ; Set ud2<<32|ud1 to input stream. )
+; If NULL, input is default.
 ; #64
-	DB	87H,'PCLOSE','W'+80H
-	DW	PCLOSR-10
-PCLOSW	DW	$+2
-	DB	64		; Call pclose(wfp).
+	DB	89H,'SET-INPU','T'+80H
+	DW	PCLOSE-9
+SETIN	DW	$+2
+	DB	64
+;
+; ( ud1 ud2 --- ; Set ud2<<32|ud1 to output stream. )
+; If NULL, output is default.
+; #65
+	DB	8AH,'SET-OUTPU','T'+80H
+	DW	SETIN-12
+SETOUT	DW	$+2
+	DB	65
 ;
 ; ( --- n )
 	DB	84H,'LIS','T'+80H
-	DW	PCLOSW-10
+	DW	SETOUT-13
 LIST	DW	DOCOL
 	DW	BASE
 	DW	ATT
