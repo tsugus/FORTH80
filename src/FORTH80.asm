@@ -3418,6 +3418,8 @@ SCODE	DW	DOCOL
 BYE	DW	$+2
 	DB	60
 ;
+; 	===== "unofficial" words =====
+;
 ; ( a1 a2 --- ud1 ud2 ; Call popen(a1+1,a2+1) in C-lang. )
 ; #62
 	DB	85H,'POPE','N'+80H
@@ -3465,6 +3467,8 @@ SETIN	DW	$+2
 	DW	SETIN-12
 SETOUT	DW	$+2
 	DB	65
+;
+; 	==============================
 ;
 ; ( --- n )
 	DB	84H,'LIS','T'+80H
