@@ -11,7 +11,7 @@
 ; *                                                            *
 ; *                     in MASM Assembly                       *
 ; *                                                            *
-; *                       Version 0.6.0                        *
+; *                       Version 0.6.1                        *
 ; *                                                            *
 ; *                                       (C) 2023-2024 Tsugu  *
 ; *                                                            *
@@ -161,7 +161,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	6		; (revision No.)
-	DW	0000H		; (user version)
+	DW	0100H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -3411,10 +3411,62 @@ SCODE	DW	DOCOL
 	DW	ASSEM		; [COMPILE] ASSEMBLER
 	DW	SEMIS
 ;
+; ( --- n )
+	DB	84H,'LIS','T'+80H
+	DW	SCODE-8
+LIST	DW	DOCOL
+	DW	BASE
+	DW	ATT
+	DW	DECA
+	DW	SWAP
+	DW	CR
+	DW	DUPE
+	DW	DUPE
+	DW	SCR
+	DW	STORE
+	DW	PDOTQ
+	DB	6,'SCR # '
+	DW	DOT
+	DW	OFSET
+	DW	ATT
+	DW	BSCR
+	DW	SLASH
+	DW	PLUS
+	DW	LIT,DRSIZ
+	DW	SLMOD
+	DW	PDOTQ
+	DB	9,' ( Drive '
+	DW	DOT
+	DW	PDOTQ
+	DB	2,'# '
+	DW	DOT
+	DW	PDOTQ
+	DB	1,')'
+	DW	LIT,10H
+	DW	ZERO
+	DW	XDO		; DO
+LIST1	DW	CR
+	DW	IDO
+	DW	THREE
+	DW	DOTR
+	DW	SPACE
+	DW	IDO
+	DW	SCR
+	DW	ATT
+	DW	PLINE
+	DW	TYPES
+	DW	LIT,3CH		; ( '<' code )
+	DW	EMIT
+	DW	XLOOP,LIST1-$	; LOOP
+	DW	CR
+	DW	BASE
+	DW	STORE
+	DW	SEMIS
+;
 ; ( --- ; Exit FORTH. )
 ; #60
 	DB	83H,'BY','E'+80H
-	DW	SCODE-8
+	DW	LIST-7
 BYE	DW	$+2
 	DB	60
 ;
@@ -3470,61 +3522,9 @@ SETOUT	DW	$+2
 ;
 ; 	==============================
 ;
-; ( --- n )
-	DB	84H,'LIS','T'+80H
-	DW	SETOUT-13
-LIST	DW	DOCOL
-	DW	BASE
-	DW	ATT
-	DW	DECA
-	DW	SWAP
-	DW	CR
-	DW	DUPE
-	DW	DUPE
-	DW	SCR
-	DW	STORE
-	DW	PDOTQ
-	DB	6,'SCR # '
-	DW	DOT
-	DW	OFSET
-	DW	ATT
-	DW	BSCR
-	DW	SLASH
-	DW	PLUS
-	DW	LIT,DRSIZ
-	DW	SLMOD
-	DW	PDOTQ
-	DB	9,' ( Drive '
-	DW	DOT
-	DW	PDOTQ
-	DB	2,'# '
-	DW	DOT
-	DW	PDOTQ
-	DB	1,')'
-	DW	LIT,10H
-	DW	ZERO
-	DW	XDO		; DO
-LIST1	DW	CR
-	DW	IDO
-	DW	THREE
-	DW	DOTR
-	DW	SPACE
-	DW	IDO
-	DW	SCR
-	DW	ATT
-	DW	PLINE
-	DW	TYPES
-	DW	LIT,3CH		; ( '<' code )
-	DW	EMIT
-	DW	XLOOP,LIST1-$	; LOOP
-	DW	CR
-	DW	BASE
-	DW	STORE
-	DW	SEMIS
-;
 ; ( --- )
 	DB	8BH,'79-STANDAR','D'+80H
-	DW	LIST-7
+	DW	SETOUT-13
 STAN79	DW	DOCOL
 	DW	SEMIS
 ;

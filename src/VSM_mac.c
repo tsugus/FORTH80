@@ -13,12 +13,12 @@
 /*                                                            */
 /*                          for Mac                           */
 /*                                                            */
-/*                       Version 0.6.0                        */
+/*                       Version 0.6.1                        */
 /*                                                            */
 /*                                       (C) 2023-2024 Tsugu  */
 /*                                                            */
 /*                                                            */
-/*  This program is released under                            */
+/*  This program is released under the                        */
 /*                                                            */
 /*                       MIT License.                         */
 /*     (https://opensource.org/licenses/mit-license.php)      */
@@ -872,7 +872,7 @@ int main(int argc, char *argv[])
   if (argc > 1)
   {
     if (!strcmp(argv[1], "-v"))
-      printf("Virtual Stack Machine for FORTH80 Version 0.6.0\n");
+      printf("Virtual Stack Machine for FORTH80 Version 0.6.1\n");
     return 0;
   }
 
