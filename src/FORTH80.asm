@@ -1,27 +1,43 @@
-; **************************************************************
-; *                                                            *
-; *                                                            *
-; *                    F  O  R  T  H  8  0                     *
-; *                                                            *
-; *                                                            *
-; *                 A FORTH langage proccessor                 *
-; *               conformiting FORTH-79 Standard               *
-; *                                                            *
-; *          ( Requires dedicated "virtual machine" )          *
-; *                                                            *
-; *                     in MASM Assembly                       *
-; *                                                            *
-; *                       Version 0.6.1                        *
-; *                                                            *
-; *                                       (C) 2023-2024 Tsugu  *
-; *                                                            *
-; *                                                            *
-; *            This software is released under the             *
-; *                                                            *
-; *                        MIT License.                        *
-; *     (https://opensource.org/licenses/mit-license.php)      *
-; *                                                            *
-; **************************************************************
+; ************************************************************
+; *                                                          *
+; *                                                          *
+; *                   F  O  R  T  H  8  0                    *
+; *                                                          *
+; *                                                          *
+; *                A FORTH langage proccessor                *
+; *              conformiting FORTH-79 Standard              *
+; *                                                          *
+; *         ( Requires dedicated "virtual machine" )         *
+; *                                                          *
+; *                     in MASM Assembly                     *
+; *                                                          *
+; *                      Version 0.6.1                       *
+; *                                                          *
+; *                                     (C) 2023-2024 Tsugu  *
+; *                                                          *
+; *                                                          *
+; *           This software is released under the            *
+; *                                                          *
+; *                       MIT License.                       *
+; *    (https://opensource.org/licenses/mit-license.php)     *
+; *                                                          *
+; ************************************************************
+;
+; ***** Notations *****
+;
+; X <- Y	: assign Y to X
+;
+; {X}		: the 8-bit memory of address X
+; 		Not a value itself !
+; 		The {X} to which you assign is a variable.
+; 		The {X} which you assign is a value.
+;
+; [X]		: the 16-bit memory of address X
+; 		[X] = {X+1} * 256 + {x}
+;
+; [X] <- [Y]	: {X+1} <- {Y+1} and {Y} <- {X}
+;
+; ***** Registers Set ******
 ;
 ; 				FORTH	8086
 ; Instruction Pointer		IP	SI
@@ -120,13 +136,16 @@ BFLEN0	EQU	BBUF0+4		; buffer tags length = 4
 LIMIT0	EQU	8000H
 NUMBU0	EQU	2		; number of disk block buffers
 FIRST0	EQU	LIMIT0-BFLEN0*NUMBU0
-UP	EQU	FIRST0-40H	; user variables area size = 40H
+UP	EQU	FIRST0-40H	; user variables area size
+				;                        = 40H
 INITR0	EQU	UP
 INITS0	EQU	INITR0-0A0H	; return stack size = A0H
 ;
 MXTOKN	EQU	34		; max bytes of tokens
 				;  (On 2-base,
-				;  'length' + '-' + "16-digits" + '.' + "16-digits")
+				;  'length' + '-'
+				;    + "16-digits"
+				;    + '.' + "16-digits")
 WRDBSZ	EQU	64+6		; word buffer size ( > C/L)
 PADSZ	EQU	80+1		; PAD size
 TMPBSZ	EQU	WRDBSZ+PADSZ	; temporary buffer area size
@@ -187,54 +206,54 @@ UVR	DW	0		; (release No.)
 	DW	0		; PFLAG
 	DW	0		; UTF-8
 	DW	1		; ECHO
-UVREND 	DW	0		; STDIN
+UVREND	DW	0		; STDIN
 ;
 ; ***** INTERFACE *****
-; take a type-state of keybord
+;
 ; #3
+; ( --- f ; Take a type-state of keybord. )
 CTST	DW	$+2
 	DB	3
-; input one character from keybord
 ; #4
+; ( --- c ; Input one character from keybord. )
 CIN	DW	$+2
 	DB	4
 	; ADDITIONAL PART
-; input one character from "stdin"
 ; #61
+; ( --- c ; Input one character from "stdin". )
 STIN	DW	$+2
 	DB	61
 	;
-; output one character to console
 ; #5
+; ( c --- ; Output one character to console. )
 COUT	DW	$+2
 	DB	5
-; output one character to printer (not used)
 ; #6
+; ( c --- ; Output one character to printer. )
 POUT	DW	$+2
 	DB	6
-; read one sector on a disk
 ; #7
+; ( secNo bufAddr drvNo --- errFlg ; Read a sector on disks. )
 READ	DW	$+2
 	DB	7
-; write one sector on a disk
 ; #8
+; ( secNo bufAddr drvNo --- errFLg ; Write a sector on disks. )
 WRITE	DW	$+2
 	DB	8
 ;
 ; ***** FORTH INNER INTERPRETER *****
 ;
-; DPUSH		( --- DX AX )
-; APUSH		( --- AX )
-; NEXT		( --- )
-; NEXT1		( --- )
-;
-; #9
-DPUSH	DB	9	; Push DX to the (parameter) stack.
-; #10
+; #9 ( NOT USED )
+; ( --- DX AX ; goto NEXT )
+WPUSH	DB	9
+; #10 ( NOT USED )
+; ( -- AX ; goto NEXT )
 APUSH	DB	10
 ; #11
+; ( --- ; BX <- [IP], W <- [IP]+1, PC <- [[IP]], IP+=2 )
 NEXT	DB	11
 ; #12
+; ( --- ; W <- BX+1, PC <- [BX] )
 NEXT1	DB	12
 ;
 ; ***** Word's Structure *****
@@ -256,16 +275,16 @@ NEXT1	DB	12
 ;     Compilation F. A. |  DOCOL  | or DOCON, DOVAL,
 ;                       |   (:)   |       DOUSE, DOVOC
 ;                       |=========|
-;      Paramatere F. A. |(word 1) | -> PFA 1
+;       Parameter F. A. | (word 1)| -> PFA 1
 ;                       |         |
 ;                       |---------|
-;                       |(word 2) | -> PFA 2
+;                       | (word 2)| -> PFA 2
 ;                       |         |
 ;                       |---------|
 ;                       |    .    |
 ;                       |    .    |
 ;                       |---------|
-;                       |(word n) | -> PFA n
+;                       | (word n)| -> PFA n
 ;                       |         |
 ;                       |---------|
 ;                       |  SEMIS  | -> PFA of ";S"
@@ -276,42 +295,42 @@ NEXT1	DB	12
 ;
 ; 	===== core words =====
 ;
-; ( --- n ) <n>
+; ( --- n ; n = [IP] )
 ; #13
 	DB	83H,'LI','T'+80H
 	DW	0	; end of dictionary
 LIT	DW	$+2	; the address here + 2
 	DB	13
 ;
-; ( cfa --- )
+; ( cfa --- ; PC <- [cfa] )
 ; #14
 	DB	87H,'EXECUT','E'+80H
 	DW	LIT-6
 EXEC	DW	$+2
 	DB	14
 ;
-; ( --- ) <n>
+; ( --- ; Jump to [IP+2]. )
 ; #15
 	DB	86H,'BRANC','H'+80H
 	DW	EXEC-10
 BRAN	DW	$+2
 	DB	15
 ;
-; ( f --- ) <n>
+; ( f --- ; Jump to [IP+2] if f == 0. )
 ; #16
 	DB	87H,'0BRANC','H'+80H
 	DW	BRAN-9
 ZBRAN	DW	$+2
 	DB	16
 ;
-; ( --- )
+; ( --- ; [RP]++, jump to [IP] if [RP] < [RP+2]. )
 ; #17
 	DB	86H,'(LOOP',')'+80H
 	DW	ZBRAN-10
 XLOOP	DW	$+2
 	DB	17
 ;
-; ( n  --- )
+; ( n  --- ; [RP]+=n, jump to [IP] if [RP] < [RP+2]. )
 ; #18
 	DB	87H,'(+LOOP',')'+80H
 	DW	XLOOP-9
@@ -374,7 +393,7 @@ RPAT	DW	$+2
 RPSTO	DW	$+2
 	DB	26
 ;
-; ( --- )
+; ( --- ; IP <- pop from Return Stack. )
 ; #27
 	DB	82H,';','S'+80H
 	DW	RPSTO-6
@@ -402,7 +421,7 @@ FROMR	DW	$+2
 RAT	DW	$+2
 	DB	30
 ;
-; ( n --- f )
+; ( n --- f ; n = 0 ? )
 ; #31
 	DB	82H,'0','='+80H
 	DW	RAT-5
@@ -500,7 +519,7 @@ USLAS	DW	$+2
 TDIV	DW	$+2
 	DB	44
 ;
-; ( a b --- ; b is 8-bit pattern. )
+; ( a b --- ; {a} <- {a} & b )
 ; #45
 	DB	86H,'TOGGL','E'+80H
 	DW	TDIV-5
@@ -514,38 +533,37 @@ TOGGL	DW	$+2
 ATT	DW	$+2
 	DB	46
 ;
-; ( n a --- ; store )
+; ( n a --- ; [a] <- n )
 ; #47
 	DB	81H,'!'+80H
 	DW	ATT-4
 STORE	DW	$+2
 	DB	47
 ;
-; ( b a --- )
+; ( c a --- ; {a} <- c )
 ; #48
 	DB	82H,'C','!'+80H
 	DW	STORE-4
 CSTOR	DW	$+2
 	DB	48
 ;
-; ( a1 a2 n --- )
-; [a2]=[a1], [a2+1]=[a1+1], ...., [a2+n-1]=[a1+n-1]
+; ( a1 a2 n --- ; In order from the head,
+; ( copy the n bytes on or after a1 to on or after a2. )
 ; #49
 	DB	85H,'CMOV','E'+80H
 	DW	CSTOR-5
 CMOVEE	DW	$+2
 	DB	49
 ;
-; ( a1 a2 n --- )
-; [a2+n-1]=[a1+n-1], [a2+n-2]=[a1+n-2], ...., [a2]=[a1]
+; ( a1 a2 n --- ; In order from the tail,
+; ( copy the n bytes on or after a1 to on or after a2. )
 ; #50
 	DB	86H,'<CMOV','E'+80H
 	DW	CMOVEE-8
 LCMOVE	DW	$+2
 	DB	50
 ;
-; ( a n b --- )
-; Fill from address a to address a+n-1 with byte b.
+; ( a n c --- ; Fill the n bytes on or after a with c. )
 ; #51
 	DB	84H,'FIL','L'+80H
 	DW	LCMOVE-9
@@ -566,6 +584,7 @@ COLON	DW	DOCOL
 	DW	RBRAC
 	DW	PSCOD
 ; #52
+; ( RP-=2, [RP] <- IP, IP <- ++W, goto NEXT )
 DOCOL	DB	52
 ;
 ; ( n --- ) <name>
@@ -577,6 +596,7 @@ CON	DW	DOCOL
 	DW	COMMA
 	DW	PSCOD
 ; #53
+; ( push [++W], goto NEXT )
 DOCON	DB	53
 ;
 ; ( --- ) <name>
@@ -587,6 +607,7 @@ VAR	DW	DOCOL
 	DW	CON
 	DW	PSCOD
 ; #54
+; ( push ++W, goto NEXT )
 DOVAR	DB	54
 ;
 ; ( d --- ) <name>
@@ -597,6 +618,7 @@ TCON	DW	DOCOL
 	DW	COMMA
 	DW	PSCOD
 ; #55
+; ( W++, push [W+2], push [W], goto NEXT )
 	DB	55
 ;
 ; ( --- ) <name>
@@ -606,7 +628,7 @@ TVAR	DW	DOCOL
 	DW	VAR
 	DW	ZERO
 	DW	COMMA
-; #56
+; #56 = #54 ( NOTE! REDUNDANCY )
 	DB	56
 ;
 ; ( n --- ) <name>
@@ -616,6 +638,7 @@ USER	DW	DOCOL
 	DW	CON
 	DW	PSCOD
 ; #57
+; ( push (([++W] & 255) + UP), goto NEXT )
 DOUSE	DB	57
 ;
 ; ( --- a )
@@ -632,6 +655,8 @@ DOES	DW	DOCOL
 	DW	COMMA
 	DW	SEMIS
 ; #58
+; ( [SP] <-> [RP], push IP, [SP] <-> [RP], IP <- [BX]+3, )
+; ( push ++W, goto NEXT                                  )
 XDOES	DB	58
 ;
 ; ( --- ) <name>
@@ -642,6 +667,7 @@ CREAT	DW	DOCOL
 	DW	SMUDG
 	DW	PSCOD
 ; #59
+; ( push ++W, goto NEXT )
 DOCREA	DB	59
 ;
 ; ( --- )
