@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.6.1                       *
+; *                      Version 0.6.2                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -23,17 +23,17 @@
 ; *                                                          *
 ; ************************************************************
 ;
-; ***** Notations *****
+; ***** Comment Notations *****
 ;
 ; X <- Y	: assign Y to X
 ;
 ; {X}		: the 8-bit memory of address X
-; 		Not a value itself !
-; 		The {X} to which you assign is a variable.
-; 		The {X} which you assign is a value.
+; 		  Not a value itself !
+; 		  The {X} to which you assign is a variable.
+; 		  The {X} which you assign is a value.
 ;
 ; [X]		: the 16-bit memory of address X
-; 		[X] = {X+1} * 256 + {x}
+; 		  [X] = {X+1} * 256 + {x}
 ;
 ; [X] <- [Y]	: {X+1} <- {Y+1} and {Y} <- {X}
 ;
@@ -45,8 +45,8 @@
 ; Return stack Pointer		RP	BP
 ; Working register		W	DX
 ;
-; stack		:	|[INITS0-2] ... [SI+4] [SI+2] [SI]
-; return stack	:	|[INITR0-2] ... [BP+4] [BP+2] [BP]
+; stack		:	|[INITS0-2] ... [IP+4] [IP+2] [IP]
+; return stack	:	|[INITR0-2] ... [RP+4] [RP+2] [RP]
 ;
 ; ***** Memory Map *****
 ;
@@ -81,7 +81,7 @@
 ;               |   .   |
 ;               |   .   |
 ;               | ----- |
-;          BP  ^|   .   |     return stack pointer (go upper)
+;          RP  ^|   .   |     return stack pointer (go upper)
 ;               |   .   |
 ;               | 7BB6H |     bottom of return stack
 ;               |=======|
@@ -180,7 +180,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	6		; (revision No.)
-	DW	0100H		; (user version)
+	DW	0200H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -295,276 +295,276 @@ NEXT1	DB	12
 ;
 ; 	===== core words =====
 ;
-; ( --- n ; n = [IP] )
 ; #13
+; ( --- n ; n = [IP] )
 	DB	83H,'LI','T'+80H
 	DW	0	; end of dictionary
 LIT	DW	$+2	; the address here + 2
 	DB	13
 ;
-; ( cfa --- ; PC <- [cfa] )
 ; #14
+; ( cfa --- ; PC <- [cfa] )
 	DB	87H,'EXECUT','E'+80H
 	DW	LIT-6
 EXEC	DW	$+2
 	DB	14
 ;
-; ( --- ; Jump to [IP+2]. )
 ; #15
+; ( --- ; Jump to [IP+2]. )
 	DB	86H,'BRANC','H'+80H
 	DW	EXEC-10
 BRAN	DW	$+2
 	DB	15
 ;
-; ( f --- ; Jump to [IP+2] if f == 0. )
 ; #16
+; ( f --- ; Jump to [IP+2] if f == 0. )
 	DB	87H,'0BRANC','H'+80H
 	DW	BRAN-9
 ZBRAN	DW	$+2
 	DB	16
 ;
-; ( --- ; [RP]++, jump to [IP] if [RP] < [RP+2]. )
 ; #17
+; ( --- ; [RP]++, jump to [IP] if [RP] < [RP+2]. )
 	DB	86H,'(LOOP',')'+80H
 	DW	ZBRAN-10
 XLOOP	DW	$+2
 	DB	17
 ;
-; ( n  --- ; [RP]+=n, jump to [IP] if [RP] < [RP+2]. )
 ; #18
+; ( n  --- ; [RP]+=n, jump to [IP] if [RP] < [RP+2]. )
 	DB	87H,'(+LOOP',')'+80H
 	DW	XLOOP-9
 XPLOO	DW	$+2
 	DB	18
 ;
-; ( n1 n2 --- ; Push n1, n2 to Return Stack. )
 ; #19
+; ( n1 n2 --- ; Push n1, n2 to Return Stack. )
 	DB	84H,'(DO',')'+80H
 	DW	XPLOO-10
 XDO	DW	$+2
 	DB	19
 ;
-; ( n1 n2 --- n3 ; n3 = n1 & n2 )
 ; #20
+; ( n1 n2 --- n3 ; n3 = n1 & n2 )
 	DB	83H,'AN','D'+80H
 	DW	XDO-7
 ANDD	DW	$+2
 	DB	20
 ;
-; ( n1 n2 --- n3 ; n3 = n1 | n2 )
 ; #21
+; ( n1 n2 --- n3 ; n3 = n1 | n2 )
 	DB	82H,'O','R'+80H
 	DW	ANDD-6
 ORR	DW	$+2
 	DB	21
 ;
-; ( n1 n2 --- n3 ; n3 = n1 ^ n2 )
 ; #22
+; ( n1 n2 --- n3 ; n3 = n1 ^ n2 )
 	DB	83H,'XO','R'+80H
 	DW	ORR-5
 XORR	DW	$+2
 	DB	22
 ;
-; ( --- n ; n = [SP] )
 ; #23
+; ( --- n ; n = [SP] )
 	DB	83H,'SP','@'+80H
 	DW	XORR-6
 SPAT	DW	$+2
 	DB	23
 ;
-; ( --- ; Initialize SP. )
 ; #24
+; ( --- ; Initialize SP. )
 	DB	83H,'SP','!'+80H
 	DW	SPAT-6
 SPSTO	DW	$+2
 	DB	24
 ;
-; ( --- n ; n = [RP] )
 ; #25
+; ( --- n ; n = [RP] )
 	DB	83H,'RP','@'+80H
 	DW	SPSTO-6
 RPAT	DW	$+2
 	DB	25
 ;
-; ( --- ; Initialize RP. )
 ; #26
+; ( --- ; Initialize RP. )
 	DB	83H,'RP','!'+80H
 	DW	RPAT-6
 RPSTO	DW	$+2
 	DB	26
 ;
-; ( --- ; IP <- pop from Return Stack. )
 ; #27
+; ( --- ; IP <- pop from Return Stack. )
 	DB	82H,';','S'+80H
 	DW	RPSTO-6
 SEMIS	DW	$+2
 	DB	27
 ;
-; ( n --- ; Push n to Return Stack. )
 ; #28
+; ( n --- ; Push n to Return Stack. )
 	DB	82H,'>','R'+80H
 	DW	SEMIS-5
 TOR	DW	$+2
 	DB	28
 ;
-; ( --- n ; Pop n from Return Stack. )
 ; #29
+; ( --- n ; Pop n from Return Stack. )
 	DB	82H,'R','>'+80H
 	DW	TOR-5
 FROMR	DW	$+2
 	DB	29
 ;
-; ( --- n ; Copy n from Return Stack. )
 ; #30
+; ( --- n ; Copy n from Return Stack. )
 	DB	82H,'R','@'+80H
 	DW	FROMR-5
 RAT	DW	$+2
 	DB	30
 ;
-; ( n --- f ; n = 0 ? )
 ; #31
+; ( n --- f ; n = 0 ? )
 	DB	82H,'0','='+80H
 	DW	RAT-5
 ZEQU	DW	$+2
 	DB	31
 ;
-; ( n --- f ; n < 0 ? )
 ; #32
+; ( n --- f ; n < 0 ? )
 	DB	82H,'0','<'+80H
 	DW	ZEQU-5
 ZLESS	DW	$+2
 	DB	32
 ;
-; ( n1 n2 --- n3 ; n3 = n1 + n2 )
 ; #33
+; ( n1 n2 --- n3 ; n3 = n1 + n2 )
 	DB	81H,'+'+80H
 	DW	ZLESS-5
 PLUS	DW	$+2
 	DB	33
 ;
-; ( n1 n2 --- n3 ; n3 = n1 - n2 )
 ; #34
+; ( n1 n2 --- n3 ; n3 = n1 - n2 )
 	DB	81H,'-'+80H
 	DW	PLUS-4
 SUBB	DW	$+2
 	DB	34
 ;
-; ( d1 d2 --- d3 ; d3 = d1 + d2 )
 ; #35
+; ( d1 d2 --- d3 ; d3 = d1 + d2 )
 	DB	82H,'D','+'+80H
 	DW	SUBB-4
 DPLUS	DW	$+2
 	DB	35
 ;
-; ( d1 d2 --- d3 ; d3 = d1 - d2 )
 ; #36
+; ( d1 d2 --- d3 ; d3 = d1 - d2 )
 	DB	82H,'D','-'+80H
 	DW	DPLUS-5
 DSUB	DW	$+2
 	DB	36
 ;
-; ( n1 n2 --- n1 n2 n1 )
 ; #37
+; ( n1 n2 --- n1 n2 n1 )
 	DB	84H,'OVE','R'+80H
 	DW	DSUB-5
 OVER	DW	$+2
 	DB	37
 ;
-; ( n --- )
 ; #38
+; ( n --- )
 	DB	84H,'DRO','P'+80H
 	DW	OVER-7
 DROP	DW	$+2
 	DB	38
 ;
-; ( n1 n2 --- n2 n1 )
 ; #39
+; ( n1 n2 --- n2 n1 )
 	DB	84H,'SWA','P'+80H
 	DW	DROP-7
 SWAP	DW	$+2
 	DB	39
 ;
-; ( n --- n n )
 ; #40
+; ( n --- n n )
 	DB	83H,'DU','P'+80H
 	DW	SWAP-7
 DUPE	DW	$+2
 	DB	40
 ;
-; ( n1 n2 n3 --- n2 n3 n1 )
 ; #41
+; ( n1 n2 n3 --- n2 n3 n1 )
 	DB	83H,'RO','T'+80H
 	DW	DUPE-6
 ROT	DW	$+2
 	DB	41
 ;
-; ( u1 u2 --- ud ; ud = u1 * u2 )
 ; #42
+; ( u1 u2 --- ud ; ud = u1 * u2 )
 	DB	82H,'U','*'+80H
 	DW	ROT-6
 USTAR	DW	$+2
 	DB	42
 ;
-; ( ud1 u2 --- u3 u4 ; u3 = ud1 % u2, u4 = ud1 / u2 )
 ; #43
+; ( ud1 u2 --- u3 u4 ; u3 = ud1 % u2, u4 = ud1 / u2 )
 	DB	82H,'U','/'+80H
 	DW	USTAR-5
 USLAS	DW	$+2
 	DB	43
 ;
-; ( n1 --- n2 ; n2 = n1 >> 1, arithmetical shift )
 ; #44
+; ( n1 --- n2 ; n2 = n1 >> 1, arithmetical shift )
 	DB	82H,'2','/'+80H
 	DW	USLAS-5
 TDIV	DW	$+2
 	DB	44
 ;
-; ( a b --- ; {a} <- {a} & b )
 ; #45
+; ( a b --- ; {a} <- {a} & b )
 	DB	86H,'TOGGL','E'+80H
 	DW	TDIV-5
 TOGGL	DW	$+2
 	DB	45
 ;
-; ( a --- n ; fetch )
 ; #46
+; ( a --- n ; n = [a] )
 	DB	81H,'@'+80H
 	DW	TOGGL-9
 ATT	DW	$+2
 	DB	46
 ;
-; ( n a --- ; [a] <- n )
 ; #47
+; ( n a --- ; [a] <- n )
 	DB	81H,'!'+80H
 	DW	ATT-4
 STORE	DW	$+2
 	DB	47
 ;
-; ( c a --- ; {a} <- c )
 ; #48
+; ( c a --- ; {a} <- c )
 	DB	82H,'C','!'+80H
 	DW	STORE-4
 CSTOR	DW	$+2
 	DB	48
 ;
-; ( a1 a2 n --- ; In order from the head,
-; ( copy the n bytes on or after a1 to on or after a2. )
 ; #49
+; ( a1 a2 n --- ; n bytes copy )
+; {a2}={a1}, {a2+1}={a1+1}, ...., {a2+n-1}={a1+n-1}
 	DB	85H,'CMOV','E'+80H
 	DW	CSTOR-5
 CMOVEE	DW	$+2
 	DB	49
 ;
-; ( a1 a2 n --- ; In order from the tail,
-; ( copy the n bytes on or after a1 to on or after a2. )
 ; #50
+; ( a1 a2 n --- ; reverse n bytes copy )
+; {a2+n-1}={a1+n-1}, {a2+n-2}={a1+n-2}, ...., {a2}={a1}
 	DB	86H,'<CMOV','E'+80H
 	DW	CMOVEE-8
 LCMOVE	DW	$+2
 	DB	50
 ;
-; ( a n c --- ; Fill the n bytes on or after a with c. )
 ; #51
+; ( a n b --- ; Fill the n bytes on or after a with b. )
 	DB	84H,'FIL','L'+80H
 	DW	LCMOVE-9
 FILL	DW	$+2
@@ -619,7 +619,7 @@ TCON	DW	DOCOL
 	DW	PSCOD
 ; #55
 ; ( W++, push [W+2], push [W], goto NEXT )
-	DB	55
+DOTCON	DB	55
 ;
 ; ( --- ) <name>
 	DB	89H,'2VARIABL','E'+80H
@@ -628,8 +628,9 @@ TVAR	DW	DOCOL
 	DW	VAR
 	DW	ZERO
 	DW	COMMA
+	DW	PSCOD
 ; #56 = #54 ( NOTE! REDUNDANCY )
-	DB	56
+DOTVAL	DB	56
 ;
 ; ( n --- ) <name>
 	DB	84H,'USE','R'+80H
@@ -3154,29 +3155,29 @@ ABORT	DW	DOCOL
 	DW	PDOTQ
 	DB	16,'FORTH80 Version '
 	DW	TUVR
-	DW	ATT		; ( release No. )
-	DW	ZERO,ZERO,DDOTR	; ( U. without spaces )
-	DW	LIT,2EH		; ( '.' code )
+	DW	ATT		; release No.
+	DW	ZERO,ZERO,DDOTR	; U. without spaces
+	DW	LIT,2EH		; '.' code
 	DW	EMIT
 	DW	TUVR
 	DW	LIT,2
 	DW	PLUS
-	DW	ATT		; ( revision No. )
+	DW	ATT		; revision No.
 	DW	ZERO,ZERO,DDOTR
 	; ----- OPTIONAL -----
-	DW	LIT,2EH		; ( '.' code )
+	DW	LIT,2EH		; '.' code
 	DW	EMIT
 	DW	TUVR
 	DW	LIT,5
 	DW	PLUS
-	DW	CAT		; ( major user version [0-255] )
+	DW	CAT		; major user version (0-255)
 	DW	ZERO,ZERO,DDOTR
 	; --------------------
 	DW	TUVR
 	DW	LIT,4
 	DW	PLUS
-	DW	CAT		; ( user version [0-25] )
-	DW	LIT,41H		; ( 'A' code )
+	DW	CAT		; user version (0-25)
+	DW	LIT,41H		; 'A' code
 	DW	PLUS
 	DW	EMIT
 ;-------------------------------------------
@@ -3489,8 +3490,8 @@ LIST1	DW	CR
 	DW	STORE
 	DW	SEMIS
 ;
-; ( --- ; Exit FORTH. )
 ; #60
+; ( --- ; Exit FORTH. )
 	DB	83H,'BY','E'+80H
 	DW	LIST-7
 BYE	DW	$+2
@@ -3498,8 +3499,8 @@ BYE	DW	$+2
 ;
 ; 	===== "unofficial" words =====
 ;
-; ( a1 a2 --- ud1 ud2 ; Call popen(a1+1,a2+1) in C-lang. )
 ; #62
+; ( a1 a2 --- ud1 ud2 ; Call popen(a1+1,a2+1) in C-lang. )
 	DB	85H,'POPE','N'+80H
 	DW	BYE-6
 POPEN	DW	$+2
@@ -3523,24 +3524,24 @@ STR_W	DW	DOVAR
 STR_RP	DW	DOVAR
 	DB	2,'r+'
 ;
-; ( ud1 ud2 --- d ; Call pclose(ud2<<32|ud1) in C-lang. )
 ; #63
+; ( ud1 ud2 --- d ; Call pclose(ud2<<32|ud1) in C-lang. )
 	DB	86H,'PCLOS','E'+80H
 	DW	STR_RP-7
 PCLOSE	DW	$+2
 	DB	63
 ;
+; #64
 ; ( ud1 ud2 --- ; Set ud2<<32|ud1 to input stream. )
 ; If NULL, input is default.
-; #64
 	DB	89H,'SET-INPU','T'+80H
 	DW	PCLOSE-9
 SETIN	DW	$+2
 	DB	64
 ;
+; #65
 ; ( ud1 ud2 --- ; Set ud2<<32|ud1 to output stream. )
 ; If NULL, output is default.
-; #65
 	DB	8AH,'SET-OUTPU','T'+80H
 	DW	SETIN-12
 SETOUT	DW	$+2

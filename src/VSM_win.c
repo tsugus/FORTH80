@@ -1,28 +1,28 @@
-/**************************************************************/
-/*                                                            */
-/*                                                            */
-/*         V i r t u a l   S t a c k   M a c h i n e          */
-/*                                                            */
-/*                            for                             */
-/*                                                            */
-/*                       F O R T H 8 0                        */
-/*                                                            */
-/*                                                            */
-/*                 A FORTH langage proccessor                 */
-/*               conformiting FORTH-79 Standard               */
-/*                                                            */
-/*                        for Windows                         */
-/*                                                            */
-/*                       Version 0.6.1                        */
-/*                                                            */
-/*                                       (C) 2023-2024 Tsugu  */
-/*                                                            */
-/*                                                            */
-/*  This program is released under the                        */
-/*                                                            */
-/*                       MIT License.                         */
-/*     (https://opensource.org/licenses/mit-license.php)      */
-/*                                                            */
+/*************************************************************/
+/*                                                           */
+/*                                                           */
+/*         V i r t u a l   S t a c k   M a c h i n e         */
+/*                                                           */
+/*                            for                            */
+/*                                                           */
+/*                       F O R T H 8 0                       */
+/*                                                           */
+/*                                                           */
+/*                A FORTH langage proccessor                 */
+/*              conformiting FORTH-79 Standard               */
+/*                                                           */
+/*                        for Windows                        */
+/*                                                           */
+/*                       Version 0.6.2                       */
+/*                                                           */
+/*                                      (C) 2023-2024 Tsugu  */
+/*                                                           */
+/*                                                           */
+/*  This program is released under the                       */
+/*                                                           */
+/*                       MIT License.                        */
+/*     (https://opensource.org/licenses/mit-license.php)     */
+/*                                                           */
 /**************************************************************/
 
 #include <stdio.h>
@@ -872,7 +872,7 @@ int main(int argc, char *argv[])
   if (argc > 1)
   {
     if (!strcmp(argv[1], "-v"))
-      printf("Virtual Stack Machine for FORTH80 Version 0.6.1\n");
+      printf("Virtual Stack Machine for FORTH80 Version 0.6.2\n");
     return 0;
   }
 
