@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.6.2                       *
+; *                      Version 0.6.3                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -180,7 +180,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	6		; (revision No.)
-	DW	0200H		; (user version)
+	DW	0300H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -650,9 +650,12 @@ DOES	DW	DOCOL
 	DW	PSCOD
 	DW	LIT,0E9H	; jump code ('JMP' = 0xE9)
 	DW	CCOMM
-	DW	LIT,XDOES-2
-	DW	HERE
-	DW	SUBB		; - ("JMP a" = "E9 a-$-2")
+	DW	LIT,XDOES	; Not a relative jump!
+;     (
+;	DW	LIT,XDOES-2
+;	DW	HERE
+;	DW	SUBB		; - ("JMP a" = "E9 a-$-2")
+;		            )
 	DW	COMMA
 	DW	SEMIS
 ; #58

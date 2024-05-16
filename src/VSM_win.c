@@ -13,7 +13,7 @@
 /*                                                           */
 /*                        for Windows                        */
 /*                                                           */
-/*                       Version 0.6.2                       */
+/*                       Version 0.6.3                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -872,7 +872,7 @@ int main(int argc, char *argv[])
   if (argc > 1)
   {
     if (!strcmp(argv[1], "-v"))
-      printf("Virtual Stack Machine for FORTH80 Version 0.6.2\n");
+      printf("Virtual Stack Machine for FORTH80 Version 0.6.3\n");
     return 0;
   }
 
