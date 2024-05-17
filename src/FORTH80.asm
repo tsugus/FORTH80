@@ -166,12 +166,12 @@ ORIG:	NOP			; NOP (= 0x90)
 ;
 ; ***** COLD & WARM *****
 ;
-; COLD START
+; COLD START ( Reset SP, RP. IP <- CLD1 )
 ; #01
 CLD_	DB	1
 CLD1	DW	COLD
 ;
-; WARM START
+; WARM START ( IP <- WAM1 )
 ; #02
 WRM	DB	2
 WRM1	DW	WARM
@@ -1146,7 +1146,7 @@ ENCL3	DW	TDUP
 				;  THEN
 ENCL6	DW	ZBRAN,ENCL4-$	; WHILE
 	DW	ONEP
-	DW	BRAN,ENCL3-$	; REPEAT ( [n1],[n2] aren't null )
+	DW	BRAN,ENCL3-$	; REPEAT ( [n1],[n2] <> null )
 ENCL4	DW	SWAP
 	DW	DROP
 	DW	OVER
@@ -1159,7 +1159,8 @@ ENCL4	DW	SWAP
 	DW	ONEP		; ( a n1 n2 n2+1 )
 	DW	SEMIS
 ;
-; ( a1 a2 --- a / ff ; Search a FORCE WORD in the FORTH DICTONARY. )
+; ( a1 a2 --- a / ff ;
+;             Search a FORCE WORD in the FORTH DICTONARY. )
 ; a1: top address of text string searched
 ; a2: NFA at which start searching
 ; a : CFA of the found word
@@ -2267,7 +2268,7 @@ IMMED	DW	DOCOL
 	DW	IMMED-12
 VOCAB	DW	DOCOL
 	DW	CREAT
-	DW	LIT,0A081H	; "blank" word (= DB 81H,' '+80H)
+	DW	LIT,0A081H	; "blank" word (= 81H,' '+80H)
 	DW	COMMA
 	DW	CURR
 	DW	ATT
@@ -2291,7 +2292,7 @@ DOVOC	DB	0E9H
 	DB	0C5H,'FORT','H'+80H
 	DW	VOCAB-13
 FORTH	DW	DOVOC
-	DW	0A081H		; "blank" word (= DB 81H,' '+80H)
+	DW	0A081H		; "blank" word (= 81H,' '+80H)
 	DW	STAN79-14	; latest word
 	DW	0
 ;
@@ -2653,7 +2654,7 @@ WORDS2	DW	INN
 	DW	SWAP
 	DW	ENCL
 	DW	HERE
-	DW	LIT,MXTOKN+2	; ( include a length byte and "margin" )
+	DW	LIT,MXTOKN+2
 	DW	BLANK
 	DW	INN
 	DW	PSTOR
@@ -2922,7 +2923,7 @@ UPDAT	DW	DOCOL
 	DW	PREV
 	DW	ATT
 	DW	ATT
-	DW	LIT,8000H	; ( Set the most significant bit. )
+	DW	LIT,8000H	; ( Set the MSB. )
 	DW	ORR
 	DW	PREV
 	DW	ATT
@@ -3406,7 +3407,7 @@ DOTES1	DW	SEMIS
 	DB	0C9H,'ASSEMBLE','R'+80H
 	DW	DOTES-5
 ASSEM	DW	DOVOC
-	DW	0A081H		; "blank" word (DB 81H,' '+80H)
+	DW	0A081H		; "blank" word (= 81H,' '+80H)
 	DW	STAN79-14
 	DW	FORTH+6
 ;

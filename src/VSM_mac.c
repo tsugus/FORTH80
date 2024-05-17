@@ -97,7 +97,7 @@ void WRM()
   NEXT();
 }
 
-// #3 (environment dependent)
+// #3
 void CTST()
 {
   if (kbhit())
@@ -107,7 +107,7 @@ void CTST()
   APUSH();
 }
 
-// #4 (environment dependent)
+// #4
 void CIN()
 {
   AX = 0x00FF & (unsigned short)getch();
@@ -116,7 +116,7 @@ void CIN()
   APUSH();
 }
 
-// #61 (3Dh) (environment dependent)
+// #61 (3Dh)
 void STIN()
 {
   if (infp != NULL)
@@ -125,21 +125,21 @@ void STIN()
   APUSH();
 }
 
-// #5 (environment dependent)
+// #5
 void COUT()
 {
   putc(pop(), stderr);
   NEXT();
 }
 
-// #6 (environment dependent)
+// #6
 void POUT()
 {
   putc(pop(), outfp);
   NEXT();
 }
 
-// #7 (environment dependent)
+// #7
 void READ() // 1 sector only
 {
   W = pop();  // starting logical sector
@@ -184,7 +184,7 @@ void READ() // 1 sector only
   APUSH();
 }
 
-// #8 (environment dependent)
+// #8
 void WRITE() // 1 sctor only
 {
   W = pop();  // starting logical sector
