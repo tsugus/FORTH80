@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.6.3                       *
+; *                      Version 0.6.4                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -166,12 +166,12 @@ ORIG:	NOP			; NOP (= 0x90)
 ;
 ; ***** COLD & WARM *****
 ;
-; COLD START ( Reset SP, RP. IP <- CLD1 )
+; COLD START ( IP <- CLD1, Reset SP, RP, goto NEXT )
 ; #01
 CLD_	DB	1
 CLD1	DW	COLD
 ;
-; WARM START ( IP <- WAM1 )
+; WARM START ( IP <- WAM1, goto NEXT )
 ; #02
 WRM	DB	2
 WRM1	DW	WARM
@@ -180,7 +180,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	6		; (revision No.)
-	DW	0300H		; (user version)
+	DW	0400H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -506,7 +506,7 @@ USTAR	DW	$+2
 	DB	42
 ;
 ; #43
-; ( ud1 u2 --- u3 u4 ; u3 = ud1 % u2, u4 = ud1 / u2 )
+; ( ud u --- ud%u ud/u / -1 -1 ; -1 -1 if ud/u is overflow. )
 	DB	82H,'U','/'+80H
 	DW	USTAR-5
 USLAS	DW	$+2

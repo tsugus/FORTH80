@@ -1,6 +1,6 @@
-# FORTH80　 Ver. 0.6.3
+# FORTH80　 Ver. 0.6.4
 
-- [FORTH80　 Ver. 0.6.3](#forth80-ver-063)
+- [FORTH80　 Ver. 0.6.4](#forth80-ver-064)
     - [Abstract](#abstract)
   - [これは何？](#これは何)
   - [使い方](#使い方)
