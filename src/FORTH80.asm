@@ -233,11 +233,11 @@ COUT	DW	$+2
 POUT	DW	$+2
 	DB	6
 ; #7
-; ( secNo bufAddr drvNo --- errFlg ; Read a sector on disks. )
+; ( drvNo bufAddr secNo --- errFlg ; Read a sector on disks. )
 READ	DW	$+2
 	DB	7
 ; #8
-; ( secNo bufAddr drvNo --- errFLg ; Write a sector on disks. )
+; ( drvNo bufAddr secNo --- errFLg ; Write a sector on disks. )
 WRITE	DW	$+2
 	DB	8
 ;
