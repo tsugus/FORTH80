@@ -13,7 +13,7 @@
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.6.5                       */
+/*                       Version 0.6.6                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -25,6 +25,9 @@
 /*                                                           */
 /**************************************************************/
 
+#define MAJOR_V 0
+#define MINOR_V 6
+#define USER_V 6
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +162,7 @@ void READ() // 1 sector only
     break;
   default:
     AX = 1; // Error Flag
+    APUSH();
     return;
   }
 
@@ -166,6 +170,7 @@ void READ() // 1 sector only
   if (fp == NULL)
   {
     AX = 1; // Error Flag
+    APUSH();
     return;
   }
 
@@ -875,7 +880,7 @@ int main(int argc, char *argv[])
       Memory[UVR + 56] = 1; // STDIN = 1
     if (!strcmp(argv[1], "-v"))
     {
-      printf("Virtual Stack Machine for FORTH80 Version 0.6.5\n");
+      printf("Virtual Stack Machine for FORTH80 Version %d.%d.%d\n", MAJOR_V, MINOR_V, USER_V);
       return 0;
     }
     if (!strcmp(argv[1], "-h"))
