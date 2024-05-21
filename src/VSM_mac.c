@@ -13,7 +13,7 @@
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.6.4                       */
+/*                       Version 0.6.5                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -871,9 +871,24 @@ int main(int argc, char *argv[])
 
   if (argc > 1)
   {
+    if (!strcmp(argv[1], "-s"))
+      Memory[UVR + 56] = 1; // STDIN = 1
     if (!strcmp(argv[1], "-v"))
-      printf("Virtual Stack Machine for FORTH80 Version 0.6.4\n");
-    return 0;
+    {
+      printf("Virtual Stack Machine for FORTH80 Version 0.6.5\n");
+      return 0;
+    }
+    if (!strcmp(argv[1], "-h"))
+    {
+      printf("\noption\n\n");
+      printf("  -h   :   Show the help of options.\n\n");
+      printf("  -s   :   Assining 1 to user variable STDIN, the program uses \"stdin\" instead of \"getch()\".\n");
+      printf("           (Note. ");
+      printf("This program uses \"stderr\" as the default output destination. ");
+      printf("To change the output destination to \"stdout\", the value of FORTH's user variable \"PFLAG\" must be set to any non-zero number.)\n\n");
+      printf("  -v   :   Display the version of this program.\n");
+      return 0;
+    }
   }
 
   while (1)
