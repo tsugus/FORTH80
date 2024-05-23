@@ -250,10 +250,10 @@ WPUSH	DB	9
 ; ( -- AX ; goto NEXT )
 APUSH	DB	10
 ; #11
-; ( --- ; BX <- [IP], W <- [IP]+1, PC <- [[IP]], IP+=2 )
+; ( --- ; BX <- [IP], IP+=2, goto NEXT1 )
 NEXT	DB	11
 ; #12
-; ( --- ; W <- BX+1, PC <- [BX] )
+; ( --- ; W <- BX, W++, PC <- [BX] )
 NEXT1	DB	12
 ;
 ; ***** Word's Structure *****
