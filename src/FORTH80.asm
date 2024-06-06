@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.6.6                       *
+; *                      Version 0.6.7                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -157,30 +157,30 @@ codeSeg	SEGMENT
 ; ---------------------------------------
 	ORG	0H
 ;
-ORIG:	NOP			; NOP (= 0x90)
-	DB	0E9H		; JMP
+ORIG:	NOP			; consider ADD (0x00) to be my NOP
+	DB	1		; my JMP
 	DW	CLD_
-	DB	90H		; NOP
-	DB	0E9H		; JMP
+	DB	0		; my NOP
+	DB	1		; my JMP
 	DW	WRM
 ;
 ; ***** COLD & WARM *****
 ;
 ; COLD START ( IP <- CLD1, Reset SP, RP, goto NEXT )
-; #01
-CLD_	DB	1
+; #02
+CLD_	DB	2
 CLD1	DW	COLD
 ;
 ; WARM START ( IP <- WAM1, goto NEXT )
-; #02
-WRM	DB	2
+; #03
+WRM	DB	3
 WRM1	DW	WARM
 ;
 ; ***** USER VARIABLES *****
 ;
 UVR	DW	0		; (release No.)
 	DW	6		; (revision No.)
-	DW	0600H		; (user version)
+	DW	0700H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -210,51 +210,50 @@ UVREND	DW	0		; STDIN
 ;
 ; ***** INTERFACE *****
 ;
-; #3
+; #4
 ; ( --- f ; Take a type-state of keybord. )
 CTST	DW	$+2
-	DB	3
-; #4
+	DB	4
+; #5
 ; ( --- c ; Input one character from keybord. )
 CIN	DW	$+2
-	DB	4
+	DB	5
 	; ADDITIONAL PART
-; #61
+; #6
 ; ( --- c ; Input one character from "stdin". )
 STIN	DW	$+2
-	DB	61
+	DB	6
 	;
-; #5
+; #7
 ; ( c --- ; Output one character to console. )
 COUT	DW	$+2
-	DB	5
-; #6
-; ( c --- ; Output one character to printer. )
-POUT	DW	$+2
-	DB	6
-; #7
-; ( drvNo bufAddr secNo --- errFlg ; Read a sector on disks. )
-READ	DW	$+2
 	DB	7
 ; #8
+; ( c --- ; Output one character to printer. )
+POUT	DW	$+2
+	DB	8
+; #9
+; ( drvNo bufAddr secNo --- errFlg ; Read a sector on disks. )
+READ	DW	$+2
+	DB	9
+; #10
 ; ( drvNo bufAddr secNo --- errFLg ; Write a sector on disks. )
 WRITE	DW	$+2
-	DB	8
+	DB	10
 ;
 ; ***** FORTH INNER INTERPRETER *****
 ;
-; #9 ( NOT USED )
-; ( --- DX AX ; goto NEXT )
-WPUSH	DB	9
-; #10 ( NOT USED )
+; APUSH
+; ( --- W AX ; goto NEXT )
+;
+; WPUSH
 ; ( -- AX ; goto NEXT )
-APUSH	DB	10
-; #11
+;
+; NEXT
 ; ( --- ; BX <- [IP], IP+=2, goto NEXT1 )
-NEXT	DB	11
-; #12
+;
+; NEXT1
 ; ( --- ; W <- BX, W++, PC <- [BX] )
-NEXT1	DB	12
 ;
 ; ***** Word's Structure *****
 ;
@@ -295,280 +294,280 @@ NEXT1	DB	12
 ;
 ; 	===== core words =====
 ;
-; #13
+; #11
 ; ( --- n ; n = [IP] )
 	DB	83H,'LI','T'+80H
 	DW	0	; end of dictionary
 LIT	DW	$+2	; the address here + 2
-	DB	13
+	DB	11
 ;
-; #14
+; #12
 ; ( cfa --- ; PC <- [cfa] )
 	DB	87H,'EXECUT','E'+80H
 	DW	LIT-6
 EXEC	DW	$+2
-	DB	14
+	DB	12
 ;
-; #15
+; #13
 ; ( --- ; Jump to [IP+2]. )
 	DB	86H,'BRANC','H'+80H
 	DW	EXEC-10
 BRAN	DW	$+2
-	DB	15
+	DB	13
 ;
-; #16
+; #14
 ; ( f --- ; Jump to [IP+2] if f == 0. )
 	DB	87H,'0BRANC','H'+80H
 	DW	BRAN-9
 ZBRAN	DW	$+2
-	DB	16
+	DB	14
 ;
-; #17
+; #15
 ; ( --- ; [RP]++, jump to [IP] if [RP] < [RP+2]. )
 	DB	86H,'(LOOP',')'+80H
 	DW	ZBRAN-10
 XLOOP	DW	$+2
-	DB	17
+	DB	15
 ;
-; #18
+; #16
 ; ( n  --- ; [RP]+=n, jump to [IP] if [RP] < [RP+2]. )
 	DB	87H,'(+LOOP',')'+80H
 	DW	XLOOP-9
 XPLOO	DW	$+2
-	DB	18
+	DB	16
 ;
-; #19
+; #17
 ; ( n1 n2 --- ; Push n1, n2 to Return Stack. )
 	DB	84H,'(DO',')'+80H
 	DW	XPLOO-10
 XDO	DW	$+2
-	DB	19
+	DB	17
 ;
-; #20
+; #18
 ; ( n1 n2 --- n3 ; n3 = n1 & n2 )
 	DB	83H,'AN','D'+80H
 	DW	XDO-7
 ANDD	DW	$+2
-	DB	20
+	DB	18
 ;
-; #21
+; #19
 ; ( n1 n2 --- n3 ; n3 = n1 | n2 )
 	DB	82H,'O','R'+80H
 	DW	ANDD-6
 ORR	DW	$+2
-	DB	21
+	DB	19
 ;
-; #22
+; #20
 ; ( n1 n2 --- n3 ; n3 = n1 ^ n2 )
 	DB	83H,'XO','R'+80H
 	DW	ORR-5
 XORR	DW	$+2
-	DB	22
+	DB	20
 ;
-; #23
+; #21
 ; ( --- n ; n = [SP] )
 	DB	83H,'SP','@'+80H
 	DW	XORR-6
 SPAT	DW	$+2
-	DB	23
+	DB	21
 ;
-; #24
+; #22
 ; ( --- ; Initialize SP. )
 	DB	83H,'SP','!'+80H
 	DW	SPAT-6
 SPSTO	DW	$+2
-	DB	24
+	DB	22
 ;
-; #25
+; #23
 ; ( --- n ; n = [RP] )
 	DB	83H,'RP','@'+80H
 	DW	SPSTO-6
 RPAT	DW	$+2
-	DB	25
+	DB	23
 ;
-; #26
+; #24
 ; ( --- ; Initialize RP. )
 	DB	83H,'RP','!'+80H
 	DW	RPAT-6
 RPSTO	DW	$+2
-	DB	26
+	DB	24
 ;
-; #27
+; #25
 ; ( --- ; IP <- pop from Return Stack. )
 	DB	82H,';','S'+80H
 	DW	RPSTO-6
 SEMIS	DW	$+2
-	DB	27
+	DB	25
 ;
-; #28
+; #26
 ; ( n --- ; Push n to Return Stack. )
 	DB	82H,'>','R'+80H
 	DW	SEMIS-5
 TOR	DW	$+2
-	DB	28
+	DB	26
 ;
-; #29
+; #27
 ; ( --- n ; Pop n from Return Stack. )
 	DB	82H,'R','>'+80H
 	DW	TOR-5
 FROMR	DW	$+2
-	DB	29
+	DB	27
 ;
-; #30
+; #28
 ; ( --- n ; Copy n from Return Stack. )
 	DB	82H,'R','@'+80H
 	DW	FROMR-5
 RAT	DW	$+2
-	DB	30
+	DB	28
 ;
-; #31
+; #29
 ; ( n --- f ; n = 0 ? )
 	DB	82H,'0','='+80H
 	DW	RAT-5
 ZEQU	DW	$+2
-	DB	31
+	DB	29
 ;
-; #32
+; #30
 ; ( n --- f ; n < 0 ? )
 	DB	82H,'0','<'+80H
 	DW	ZEQU-5
 ZLESS	DW	$+2
-	DB	32
+	DB	30
 ;
-; #33
+; #31
 ; ( n1 n2 --- n3 ; n3 = n1 + n2 )
 	DB	81H,'+'+80H
 	DW	ZLESS-5
 PLUS	DW	$+2
-	DB	33
+	DB	31
 ;
-; #34
+; #32
 ; ( n1 n2 --- n3 ; n3 = n1 - n2 )
 	DB	81H,'-'+80H
 	DW	PLUS-4
 SUBB	DW	$+2
-	DB	34
+	DB	32
 ;
-; #35
+; #33
 ; ( d1 d2 --- d3 ; d3 = d1 + d2 )
 	DB	82H,'D','+'+80H
 	DW	SUBB-4
 DPLUS	DW	$+2
-	DB	35
+	DB	33
 ;
-; #36
+; #34
 ; ( d1 d2 --- d3 ; d3 = d1 - d2 )
 	DB	82H,'D','-'+80H
 	DW	DPLUS-5
 DSUB	DW	$+2
-	DB	36
+	DB	34
 ;
-; #37
+; #35
 ; ( n1 n2 --- n1 n2 n1 )
 	DB	84H,'OVE','R'+80H
 	DW	DSUB-5
 OVER	DW	$+2
-	DB	37
+	DB	35
 ;
-; #38
+; #36
 ; ( n --- )
 	DB	84H,'DRO','P'+80H
 	DW	OVER-7
 DROP	DW	$+2
-	DB	38
+	DB	36
 ;
-; #39
+; #37
 ; ( n1 n2 --- n2 n1 )
 	DB	84H,'SWA','P'+80H
 	DW	DROP-7
 SWAP	DW	$+2
-	DB	39
+	DB	37
 ;
-; #40
+; #38
 ; ( n --- n n )
 	DB	83H,'DU','P'+80H
 	DW	SWAP-7
 DUPE	DW	$+2
-	DB	40
+	DB	38
 ;
-; #41
+; #39
 ; ( n1 n2 n3 --- n2 n3 n1 )
 	DB	83H,'RO','T'+80H
 	DW	DUPE-6
 ROT	DW	$+2
-	DB	41
+	DB	39
 ;
-; #42
+; #40
 ; ( u1 u2 --- ud ; ud = u1 * u2 )
 	DB	82H,'U','*'+80H
 	DW	ROT-6
 USTAR	DW	$+2
-	DB	42
+	DB	40
 ;
-; #43
+; #41
 ; ( ud u --- ud%u ud/u / -1 -1 ; -1 -1 if ud/u is overflow. )
 	DB	82H,'U','/'+80H
 	DW	USTAR-5
 USLAS	DW	$+2
-	DB	43
+	DB	41
 ;
-; #44
+; #42
 ; ( n1 --- n2 ; n2 = n1 >> 1, arithmetical shift )
 	DB	82H,'2','/'+80H
 	DW	USLAS-5
 TDIV	DW	$+2
-	DB	44
+	DB	42
 ;
-; #45
+; #43
 ; ( a b --- ; {a} <- {a} & b )
 	DB	86H,'TOGGL','E'+80H
 	DW	TDIV-5
 TOGGL	DW	$+2
-	DB	45
+	DB	43
 ;
-; #46
+; #44
 ; ( a --- n ; n = [a] )
 	DB	81H,'@'+80H
 	DW	TOGGL-9
 ATT	DW	$+2
-	DB	46
+	DB	44
 ;
-; #47
+; #45
 ; ( n a --- ; [a] <- n )
 	DB	81H,'!'+80H
 	DW	ATT-4
 STORE	DW	$+2
-	DB	47
+	DB	45
 ;
-; #48
+; #46
 ; ( c a --- ; {a} <- c )
 	DB	82H,'C','!'+80H
 	DW	STORE-4
 CSTOR	DW	$+2
-	DB	48
+	DB	46
 ;
-; #49
+; #47
 ; ( a1 a2 n --- ; n bytes copy )
 ; {a2}={a1}, {a2+1}={a1+1}, ...., {a2+n-1}={a1+n-1}
 	DB	85H,'CMOV','E'+80H
 	DW	CSTOR-5
 CMOVEE	DW	$+2
-	DB	49
+	DB	47
 ;
-; #50
+; #48
 ; ( a1 a2 n --- ; reverse n bytes copy )
 ; {a2+n-1}={a1+n-1}, {a2+n-2}={a1+n-2}, ...., {a2}={a1}
 	DB	86H,'<CMOV','E'+80H
 	DW	CMOVEE-8
 LCMOVE	DW	$+2
-	DB	50
+	DB	48
 ;
-; #51
+; #49
 ; ( a n b --- ; Fill the n bytes on or after a with b. )
 	DB	84H,'FIL','L'+80H
 	DW	LCMOVE-9
 FILL	DW	$+2
-	DB	51
+	DB	49
 ;
 ; ( --- ) <name>
 	DB	0C1H,':'+80H
@@ -583,9 +582,9 @@ COLON	DW	DOCOL
 	DW	PCREAT
 	DW	RBRAC
 	DW	PSCOD
-; #52
+; #50
 ; ( RP-=2, [RP] <- IP, IP <- ++W, goto NEXT )
-DOCOL	DB	52
+DOCOL	DB	50
 ;
 ; ( n --- ) <name>
 	DB	88H,'CONSTAN','T'+80H
@@ -595,9 +594,9 @@ CON	DW	DOCOL
 	DW	SMUDG
 	DW	COMMA
 	DW	PSCOD
-; #53
+;
 ; ( push [++W], goto NEXT )
-DOCON	DB	53
+DOCON	DB	58
 ;
 ; ( --- ) <name>
 	DB	88H,'VARIABL','E'+80H
@@ -606,9 +605,9 @@ VAR	DW	DOCOL
 	DW	ZERO
 	DW	CON
 	DW	PSCOD
-; #54
+;
 ; ( push ++W, goto NEXT )
-DOVAR	DB	54
+DOVAR	DB	59
 ;
 ; ( d --- ) <name>
 	DB	89H,'2CONSTAN','T'+80H
@@ -617,9 +616,9 @@ TCON	DW	DOCOL
 	DW	CON
 	DW	COMMA
 	DW	PSCOD
-; #55
+;
 ; ( W++, push [W+2], push [W], goto NEXT )
-DOTCON	DB	55
+DOTCON	DB	60
 ;
 ; ( --- ) <name>
 	DB	89H,'2VARIABL','E'+80H
@@ -630,7 +629,7 @@ TVAR	DW	DOCOL
 	DW	COMMA
 	DW	PSCOD
 ; #56 = #54 ( NOTE! REDUNDANCY )
-DOTVAL	DB	56
+DOTVAL	DB	61
 ;
 ; ( n --- ) <name>
 	DB	84H,'USE','R'+80H
@@ -640,7 +639,7 @@ USER	DW	DOCOL
 	DW	PSCOD
 ; #57
 ; ( push (([++W] & 255) + UP), goto NEXT )
-DOUSE	DB	57
+DOUSE	DB	62
 ;
 ; ( --- a )
 	DB	0C5H,'DOES','>'+80H
@@ -648,20 +647,15 @@ DOUSE	DB	57
 DOES	DW	DOCOL
 	DW	COMP
 	DW	PSCOD
-	DW	LIT,0E9H	; jump code ('JMP' = 0xE9)
+	DW	LIT,01H		; jump code ('JMP' = 1)
 	DW	CCOMM
 	DW	LIT,XDOES	; Not a relative jump!
-;     (
-;	DW	LIT,XDOES-2
-;	DW	HERE
-;	DW	SUBB		; - ("JMP a" = "E9 a-$-2")
-;		            )
 	DW	COMMA
 	DW	SEMIS
-; #58
+; #51
 ; ( [SP] <-> [RP], push IP, [SP] <-> [RP], IP <- [BX]+3, )
 ; ( push ++W, goto NEXT                                  )
-XDOES	DB	58
+XDOES	DB	51
 ;
 ; ( --- ) <name>
 	DB	86H,'CREAT','E'+80H
@@ -670,9 +664,9 @@ CREAT	DW	DOCOL
 	DW	PCREAT
 	DW	SMUDG
 	DW	PSCOD
-; #59
+; #52
 ; ( push ++W, goto NEXT )
-DOCREA	DB	59
+DOCREA	DB	52
 ;
 ; ( --- )
 	DB	84H,'COL','D'+80H
@@ -755,7 +749,7 @@ WREC	DW	DOCOL
 ;
 ; ( --- n )
 ; (origin)
-	DB	84H,'ORI','G'+80H
+	DB	86H,'ORIGI','N'+80H
 	DW	WREC-12
 ORIGI	DW	DOCON
 	DW	ORIG0
@@ -763,7 +757,7 @@ ORIGI	DW	DOCON
 ; ( --- n )
 ; (bytes per buffer)
 	DB	85H,'B/BU','F'+80H
-	DW	ORIGI-7
+	DW	ORIGI-9
 BBUF	DW	DOCON
 	DW	BBUF0
 ;
@@ -1888,7 +1882,7 @@ DDOT	DW	DOCOL
 	DW	SPACE
 	DW	SEMIS
 ;
-; ( n --- )
+; ( u --- )
 	DB	82H,'U','.'+80H
 	DW	DDOT-5
 UDOT	DW	DOCOL
@@ -2281,7 +2275,7 @@ VOCAB	DW	DOCOL
 	DW	VOCL
 	DW	STORE
 	DW	PSCOD
-DOVOC	DB	0E9H
+DOVOC	DB	01H		; the code of my JMP
 	DW	XDOES
 	DW	TWOP
 	DW	CONT
@@ -3442,7 +3436,7 @@ SCODE	DW	DOCOL
 	DW	ASSEM		; [COMPILE] ASSEMBLER
 	DW	SEMIS
 ;
-; ( scr --- )
+; ( n --- )
 	DB	84H,'LIS','T'+80H
 	DW	SCODE-8
 LIST	DW	DOCOL
@@ -3494,21 +3488,21 @@ LIST1	DW	CR
 	DW	STORE
 	DW	SEMIS
 ;
-; #60
+; #53
 ; ( --- ; Exit FORTH. )
 	DB	83H,'BY','E'+80H
 	DW	LIST-7
 BYE	DW	$+2
-	DB	60
+	DB	53
 ;
 ; 	===== "unofficial" words =====
 ;
-; #62
+; #54
 ; ( a1 a2 --- ud1 ud2 ; Call popen(a1+1,a2+1) in C-lang. )
 	DB	85H,'POPE','N'+80H
 	DW	BYE-6
 POPEN	DW	$+2
-	DB	62
+	DB	54
 ;
 ; ( --- a ; for POPEN )
 	DB	83H,'"r','"'+80H
@@ -3528,28 +3522,28 @@ STR_W	DW	DOVAR
 STR_RP	DW	DOVAR
 	DB	2,'r+'
 ;
-; #63
+; #55
 ; ( ud1 ud2 --- d ; Call pclose(ud2<<32|ud1) in C-lang. )
 	DB	86H,'PCLOS','E'+80H
 	DW	STR_RP-7
 PCLOSE	DW	$+2
-	DB	63
+	DB	55
 ;
-; #64
+; #56
 ; ( ud1 ud2 --- ; Set ud2<<32|ud1 to input stream. )
 ; If NULL, input is default.
 	DB	89H,'SET-INPU','T'+80H
 	DW	PCLOSE-9
 SETIN	DW	$+2
-	DB	64
+	DB	56
 ;
-; #65
+; #57
 ; ( ud1 ud2 --- ; Set ud2<<32|ud1 to output stream. )
 ; If NULL, output is default.
 	DB	8AH,'SET-OUTPU','T'+80H
 	DW	SETIN-12
 SETOUT	DW	$+2
-	DB	65
+	DB	57
 ;
 ; 	==============================
 ;

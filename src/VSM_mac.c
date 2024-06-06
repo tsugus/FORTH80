@@ -13,7 +13,7 @@
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.6.6                       */
+/*                       Version 0.7.0                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -26,8 +26,8 @@
 /**************************************************************/
 
 #define MAJOR_V 0
-#define MINOR_V 6
-#define USER_V 6
+#define MINOR_V 7
+#define USER_V 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,6 +45,7 @@ unsigned short IP, SP, RP, W; // "Register"
 unsigned short AX, BX, CX;    // "Register"
 
 FILE *infp = NULL, *outfp = NULL;
+int update_flag = 0;
 
 unsigned short read_word(int n)
 {
@@ -58,6 +59,18 @@ void write_word(int n, unsigned short x)
 {
   Memory[n] = x;
   Memory[n + 1] = x >> 8;
+}
+
+// #0  90h
+void NOP()
+{
+  PC++;
+}
+
+// #1  E9h
+void JMP()
+{
+  PC = read_word(++PC);
 }
 
 unsigned short pop()
@@ -84,7 +97,7 @@ void NEXT();
 
 void APUSH();
 
-// #1
+// #2
 void CLD_()
 {
   IP = CLD1;
@@ -93,14 +106,14 @@ void CLD_()
   NEXT();
 }
 
-// #2
+// #3
 void WRM()
 {
   IP = WRM1;
   NEXT();
 }
 
-// #3
+// #4
 void CTST()
 {
   if (kbhit())
@@ -110,7 +123,7 @@ void CTST()
   APUSH();
 }
 
-// #4
+// #5
 void CIN()
 {
   AX = 0x00FF & (unsigned short)getch();
@@ -119,7 +132,7 @@ void CIN()
   APUSH();
 }
 
-// #61 (3Dh)
+// #6
 void STIN()
 {
   if (infp != NULL)
@@ -128,21 +141,21 @@ void STIN()
   APUSH();
 }
 
-// #5
+// #7
 void COUT()
 {
   putc(pop(), stderr);
   NEXT();
 }
 
-// #6
+// #8
 void POUT()
 {
   putc(pop(), outfp);
   NEXT();
 }
 
-// #7
+// #9
 void READ() // 1 sector only
 {
   W = pop();  // starting logical sector
@@ -189,7 +202,7 @@ void READ() // 1 sector only
   APUSH();
 }
 
-// #8
+// #10
 void WRITE() // 1 sctor only
 {
   W = pop();  // starting logical sector
@@ -234,14 +247,14 @@ void WRITE() // 1 sctor only
   APUSH();
 }
 
-// #9
+// WPUSH
 void WPUSH()
 {
   push(W);
   APUSH();
 }
 
-// #10 (0Ah)
+// APUSH
 void APUSH()
 {
   push(AX);
@@ -250,7 +263,7 @@ void APUSH()
 
 void NEXT1();
 
-// #11 (0Bh)
+// NEXT
 void NEXT()
 {
   BX = read_word(IP);
@@ -258,7 +271,7 @@ void NEXT()
   NEXT1();
 }
 
-// 12 (0Ch)
+// NEXT1
 void NEXT1()
 {
   W = BX;
@@ -266,7 +279,7 @@ void NEXT1()
   PC = read_word(BX);
 }
 
-// #13 (0Dh)
+// #11
 void LIT()
 {
   AX = read_word(IP);
@@ -274,21 +287,21 @@ void LIT()
   APUSH();
 }
 
-// #14 (0Eh)
+// #12
 void EXEC()
 {
   BX = pop();
   NEXT1();
 }
 
-// #15 (0Fh)
+// #13
 void BRAN()
 {
   IP += read_word(IP);
   NEXT();
 }
 
-// #16 (10h)
+// #14
 void ZBRAN()
 {
   if (!pop())
@@ -314,19 +327,19 @@ void loop(unsigned short x)
   }
 }
 
-// #17 (11h)
+// #15
 void XLOOP()
 {
   loop(1);
 }
 
-// #18 (12h)
+// #16
 void XPLOO()
 {
   loop(pop());
 }
 
-// #19 (13h)
+// #17
 void XDO()
 {
   W = pop();
@@ -338,7 +351,7 @@ void XDO()
   NEXT();
 }
 
-// #20 (14h)
+// #18
 void ANDD()
 {
   AX = pop();
@@ -346,7 +359,7 @@ void ANDD()
   APUSH();
 }
 
-// #21 (15h)
+// #19
 void ORR()
 {
   AX = pop();
@@ -354,7 +367,7 @@ void ORR()
   APUSH();
 }
 
-// #22 (16h)
+// #20
 void XORR()
 {
   AX = pop();
@@ -362,35 +375,35 @@ void XORR()
   APUSH();
 }
 
-// #23 (17h)
+// #21
 void SPAT()
 {
   AX = SP;
   APUSH();
 }
 
-// #24 (18h)
+// #22
 void SPSTO()
 {
   SP = read_word(UP + 6);
   NEXT();
 }
 
-// #25 (19h)
+// #23
 void RPAT()
 {
   AX = RP;
   APUSH();
 }
 
-// #26 (1Ah)
+// #24
 void RPSTO()
 {
   RP = read_word(UP + 8);
   NEXT();
 }
 
-// #27 (1Bh)
+// #25
 void SEMIS()
 {
   IP = read_word(RP);
@@ -398,7 +411,7 @@ void SEMIS()
   NEXT();
 }
 
-// #28 (1Ch)
+// #26
 void TOR()
 {
   RP -= 2;
@@ -406,7 +419,7 @@ void TOR()
   NEXT();
 }
 
-// #29 (1Dh)
+// #27
 void FROMR()
 {
   AX = read_word(RP);
@@ -414,14 +427,14 @@ void FROMR()
   APUSH();
 }
 
-// #30 (1Eh)
+// #28
 void RAT()
 {
   AX = read_word(RP);
   APUSH();
 }
 
-// #31 (1Fh)
+// #29
 void ZEQU()
 {
   if (pop())
@@ -431,14 +444,14 @@ void ZEQU()
   APUSH();
 }
 
-// #32 (20h)
+// #30
 void ZLESS()
 {
   AX = pop() >> 15;
   APUSH();
 }
 
-// #33 (21h)
+// #31
 void PLUS()
 {
   AX = pop();
@@ -446,7 +459,7 @@ void PLUS()
   APUSH();
 }
 
-// #34 (22h)
+// #32
 void SUBB()
 {
   AX = pop();
@@ -454,7 +467,7 @@ void SUBB()
   APUSH();
 }
 
-// #35 (23h)
+// #33
 void DPLUS()
 {
   unsigned int d2 = pop();
@@ -467,7 +480,7 @@ void DPLUS()
   WPUSH();
 }
 
-// #36 (24h)
+// #34
 void DSUB()
 {
   unsigned int d2 = pop();
@@ -480,7 +493,7 @@ void DSUB()
   WPUSH();
 }
 
-// #37 (25h)
+// #35
 void OVER()
 {
   W = pop();
@@ -489,14 +502,14 @@ void OVER()
   WPUSH();
 }
 
-// #38 (26h)
+// #36
 void DROP()
 {
   AX = pop();
   NEXT();
 }
 
-// #39 (27h)
+// #37
 void SWAP()
 {
   W = pop();
@@ -504,7 +517,7 @@ void SWAP()
   WPUSH();
 }
 
-// #40 (28h)
+// #38
 void DUPE()
 {
   AX = pop();
@@ -512,7 +525,7 @@ void DUPE()
   APUSH();
 }
 
-// #41 (29h)
+// #39
 void ROT()
 {
   W = pop();
@@ -522,7 +535,7 @@ void ROT()
   WPUSH();
 }
 
-// #42 (2Ah)
+// #40
 void USTAR()
 {
   unsigned int u2 = pop();
@@ -533,7 +546,7 @@ void USTAR()
   WPUSH();
 }
 
-// #43 (2Bh)
+// #41
 void USLAS()
 {
   unsigned short u = pop();
@@ -553,7 +566,7 @@ void USLAS()
   WPUSH();
 }
 
-// #44 (2Ch)
+// #42
 void TDIV()
 {
   AX = pop();
@@ -561,7 +574,7 @@ void TDIV()
   APUSH();
 }
 
-// #45 (2Dh)
+// #43
 void TOGGL()
 {
   AX = pop();
@@ -569,14 +582,14 @@ void TOGGL()
   NEXT();
 }
 
-// #46 (2Eh)
+// #44
 void ATT()
 {
   AX = read_word(pop());
   APUSH();
 }
 
-// #47 (2Fh)
+// #45
 void STORE()
 {
   BX = pop();
@@ -584,7 +597,7 @@ void STORE()
   NEXT();
 }
 
-// #48 (30h)
+// #46
 void CSTOR()
 {
   BX = pop();
@@ -592,7 +605,7 @@ void CSTOR()
   NEXT();
 }
 
-// #49 (31h)
+// #47
 void CMOVE()
 {
   int n = pop();
@@ -603,7 +616,7 @@ void CMOVE()
   NEXT();
 }
 
-// #50 (32h)
+// #48
 void LCMOVE()
 {
   int n = pop();
@@ -614,7 +627,7 @@ void LCMOVE()
   NEXT();
 }
 
-// #51 (33h)
+// #49
 void FILL()
 {
   unsigned char b = pop();
@@ -625,7 +638,7 @@ void FILL()
   NEXT();
 }
 
-// #52 (34h)
+// #50
 void DOCOL()
 {
   W++;
@@ -635,45 +648,7 @@ void DOCOL()
   NEXT();
 }
 
-// #53 (35h)
-void DOCON()
-{
-  AX = read_word(++W);
-  APUSH();
-}
-
-// #54 (36h)
-void DOVAR()
-{
-  push(++W);
-  NEXT();
-}
-
-// #55 (37h)
-void DOTCON()
-{
-  AX = read_word(++W);
-  W = read_word(W + 2);
-  WPUSH();
-}
-
-// #56 (38h)
-void DOTVAR()
-{
-  push(++W);
-  NEXT();
-}
-
-// #57 (39h)
-void DOUSE()
-{
-  BX = read_word(++W);
-  BX &= 0x00FF;
-  AX = BX + UP;
-  APUSH();
-}
-
-// #58 (3Ah)
+// #51
 void XDOES()
 {
   exchange(&RP, &SP);
@@ -684,20 +659,44 @@ void XDOES()
   NEXT();
 }
 
-// #59 (3Bh)
+// #52
 void DOCREA()
 {
   push(++W);
   NEXT();
 }
 
-// #60 (3Ch)
+// #53
 void BYE()
 {
+  if (update_flag)
+  {
+    char ch;
+    printf("\nDo you update FORTH80.bin ? (Y/N): ");
+    scanf("%c", &ch);
+    if (ch == 'Y' || ch == 'y')
+    {
+      FILE *fp = NULL;
+      char *file = "FORTH80.bin";
+      fp = fopen(file, "wb");
+      if (fp != NULL)
+      {
+        Memory[UVR + 18] = Memory[UP + 18];       // DP
+        write_word(UVR + 18, read_word(UP + 18)); // DP
+        Memory[UVR + 20] = Memory[UP + 20];       // VOC-LINK
+        write_word(UVR + 20, read_word(UP + 20)); // VOC-LINK
+        fwrite(Memory, 1, read_word(UVR + 18), fp);
+        fclose(fp);
+      }
+      else
+        fprintf(stderr, "To open %s is failed.\n", file);
+    }
+  }
+
   exit(EXIT_SUCCESS);
 }
 
-// #62 (3Eh)
+// #54
 void POPEN()
 {
   unsigned short a2 = pop();
@@ -725,7 +724,7 @@ void POPEN()
   NEXT();
 }
 
-// 63 (3Fh)
+// #55
 void PCLOSE()
 {
   unsigned long long u4 = pop();
@@ -742,7 +741,7 @@ void PCLOSE()
   NEXT();
 }
 
-// 64 (40h)
+// #56
 void SETIN()
 {
   unsigned long long u4 = pop();
@@ -757,7 +756,7 @@ void SETIN()
   NEXT();
 }
 
-// 65 (41h)
+// #57
 void SETOUT()
 {
   unsigned long long u4 = pop();
@@ -772,34 +771,58 @@ void SETOUT()
   NEXT();
 }
 
-// 90h
-void NOP()
+// #58
+void DOCON()
 {
-  PC++;
+  AX = read_word(++W);
+  APUSH();
 }
 
-// E9h
-void JMP()
+// #59
+void DOVAR()
 {
-  PC = read_word(++PC);
+  push(++W);
+  NEXT();
+}
+
+// #60
+void DOTCON()
+{
+  AX = read_word(++W);
+  W = read_word(W + 2);
+  WPUSH();
+}
+
+// #61
+void DOTVAR()
+{
+  push(++W);
+  NEXT();
+}
+
+// #62
+void DOUSE()
+{
+  BX = read_word(++W);
+  BX &= 0x00FF;
+  AX = BX + UP;
+  APUSH();
 }
 
 /****************************************/
 
 void (*func_table[])() = {
-    NULL,
+    NOP,
+    JMP,
     CLD_,
     WRM,
     CTST,
     CIN,
+    STIN,
     COUT,
     POUT,
     READ,
     WRITE,
-    WPUSH,
-    APUSH,
-    NEXT,
-    NEXT1,
     LIT,
     EXEC,
     BRAN,
@@ -840,19 +863,18 @@ void (*func_table[])() = {
     LCMOVE,
     FILL,
     DOCOL,
+    XDOES,
+    DOCREA,
+    BYE,
+    POPEN,
+    PCLOSE,
+    SETIN,
+    SETOUT,
     DOCON,
     DOVAR,
     DOTCON,
     DOTVAR,
-    DOUSE,
-    XDOES,
-    DOCREA,
-    BYE,
-    STIN,
-    POPEN,
-    PCLOSE,
-    SETIN,
-    SETOUT};
+    DOUSE};
 
 /****************************************/
 
@@ -874,15 +896,11 @@ int main(int argc, char *argv[])
   Memory[UVR + 26 * 2] = 1; // the initial value of the user variable "UTF-8"
   infp = stdin, outfp = stdout;
 
+  if (Memory[0] == 0x90)
+    Memory[0] = 0; // NOP (0x90) of i8086 -> my NOP (0x00)
+
   if (argc > 1)
   {
-    if (!strcmp(argv[1], "-s"))
-      Memory[UVR + 56] = 1; // STDIN = 1
-    if (!strcmp(argv[1], "-v"))
-    {
-      printf("Virtual Stack Machine for FORTH80 Version %d.%d.%d\n", MAJOR_V, MINOR_V, USER_V);
-      return 0;
-    }
     if (!strcmp(argv[1], "-h"))
     {
       printf("\noption\n\n");
@@ -891,7 +909,17 @@ int main(int argc, char *argv[])
       printf("           (Note. ");
       printf("This program uses \"stderr\" as the default output destination. ");
       printf("To change the output destination to \"stdout\", the value of FORTH's user variable \"PFLAG\" must be set to any non-zero number.)\n\n");
+      printf("  -u   :   Changes made to the system are saved to FORTH80.bin.\n");
       printf("  -v   :   Display the version of this program.\n");
+      return 0;
+    }
+    if (!strcmp(argv[1], "-s"))
+      Memory[UVR + 56] = 1; // STDIN = 1
+    if (!strcmp(argv[1], "-u"))
+      update_flag = 1;
+    if (!strcmp(argv[1], "-v"))
+    {
+      printf("Virtual Stack Machine for FORTH80 Version %d.%d.%d\n", MAJOR_V, MINOR_V, USER_V);
       return 0;
     }
   }
@@ -899,12 +927,8 @@ int main(int argc, char *argv[])
   while (1)
   {
     int opecode = Memory[PC];
-    if (opecode == 0xE9)
-      JMP();
-    else if (1 <= opecode && opecode <= 65)
+    if (opecode <= 62)
       (*func_table[opecode])();
-    else if (opecode == 0x90)
-      NOP();
     else
     {
       fprintf(stderr, "%02X: undefined code.\n", opecode);
