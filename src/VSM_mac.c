@@ -5,7 +5,7 @@
 /*                                                           */
 /*                            for                            */
 /*                                                           */
-/*                       F O R T H 8 0                       */
+/*                F O R T H 8 0  ver. 0.6.7 ~                */
 /*                                                           */
 /*                                                           */
 /*                A FORTH langage proccessor                 */
@@ -13,7 +13,7 @@
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.7.0                       */
+/*                       Version 0.7.1                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -27,7 +27,7 @@
 
 #define MAJOR_V 0
 #define MINOR_V 7
-#define USER_V 0
+#define USER_V 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +42,7 @@
 unsigned char Memory[LIMIT] = {0};
 int PC = 0;                   // Program Counter
 unsigned short IP, SP, RP, W; // "Register"
-unsigned short AX, BX, CX;    // "Register"
+unsigned short AX, BX;        // "Register"
 
 FILE *infp = NULL, *outfp = NULL;
 int update_flag = 0;
