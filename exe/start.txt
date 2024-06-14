@@ -1,4 +1,4 @@
-( Usage: % ./VSM < start.txt > FORTH80new.bin [Return] )
+( Usage: % ./VSM -u < start.txt [Return] )
 
 VARIABLE START HEX 3000 START ! DR1 8 LOAD COLD
 
