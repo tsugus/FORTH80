@@ -13,7 +13,7 @@
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.7.1                       */
+/*                       Version 0.7.2                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -27,7 +27,7 @@
 
 #define MAJOR_V 0
 #define MINOR_V 7
-#define USER_V 1
+#define USER_V 2
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +39,7 @@
 #define UP 0x7BB8
 #define SECTOR_SIZE 512
 
-unsigned char Memory[LIMIT] = {0};
+unsigned char Memory[LIMIT];
 int PC = 0;                   // Program Counter
 unsigned short IP, SP, RP, W; // "Register"
 unsigned short AX, BX;        // "Register"
