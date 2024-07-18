@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.6.7                       *
+; *                      Version 0.6.8                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -130,8 +130,8 @@ DRSIZ	EQU	720		; drive size (KB)
 ; ***** System Memory Configuration *****
 ;
 ORIG0	EQU	0H
-BBUF0	EQU	200H		; bytes per buffer
-BSCR0	EQU	2		; blocks per screen
+BBUF0	EQU	1024		; bytes per buffer
+BSCR0	EQU	1		; blocks per screen
 BFLEN0	EQU	BBUF0+4		; buffer tags length = 4
 LIMIT0	EQU	8000H
 NUMBU0	EQU	2		; number of disk block buffers
@@ -180,7 +180,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	6		; (revision No.)
-	DW	0700H		; (user version)
+	DW	0800H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
