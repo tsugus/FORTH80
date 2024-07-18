@@ -5,7 +5,7 @@
 /*                                                           */
 /*                            for                            */
 /*                                                           */
-/*                F O R T H 8 0  ver. 0.6.7 ~                */
+/*                F O R T H 8 0  ver. 0.6.8 ~                */
 /*                                                           */
 /*                                                           */
 /*                A FORTH langage proccessor                 */
@@ -13,7 +13,7 @@
 /*                                                           */
 /*                        for Windows                        */
 /*                                                           */
-/*                       Version 0.7.2                       */
+/*                       Version 0.7.3                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -27,7 +27,7 @@
 
 #define MAJOR_V 0
 #define MINOR_V 7
-#define USER_V 2
+#define USER_V 3
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,8 +36,8 @@
 #define CLD1 0x0009
 #define WRM1 0x000C
 #define UVR 0x000E
-#define UP 0x7BB8
-#define SECTOR_SIZE 512
+#define UP 0x77B8
+#define SECTOR_SIZE 1024
 
 unsigned char Memory[LIMIT];
 int PC = 0;                   // Program Counter
