@@ -20,7 +20,7 @@
  0 P ( FORTH80 restructing -- Start Up )
  1 P ( Note! This screen should be input directly, not be loaded.  )
  2 P ( The following program repositions and rebuilds the FORTH    )
- 3 P ( dictionary to the START address and late.)
+ 3 P ( dictionary to the START address and late.                   )
  4 P FORTH DEFINITIONS  1 WARNING !
  5 P VARIABLE START HEX 3000 START !
  6 P 8 LOAD COLD
