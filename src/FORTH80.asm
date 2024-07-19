@@ -7,7 +7,7 @@
 ; *                A FORTH langage proccessor                *
 ; *              conformiting FORTH-79 Standard              *
 ; *                                                          *
-; *         ( Requires dedicated "virtual machine" )         *
+; *        ( Requires a dedicated "virtual machine" )        *
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
@@ -55,7 +55,7 @@
 ;               |   .   |
 ;               |   .   |
 ;               |=======|
-;       LIT-6 ->| 005CH |     start of dictionary
+;       LIT-6 ->| 005DH |     start of dictionary
 ;               |   .   |
 ;               |   .   |
 ;      INITDP ->| ????H |     initial position of DP
@@ -75,20 +75,20 @@
 ;               | ----- |
 ;          SP  ^|   .   |     stack pointer (go upper)
 ;               |   .   |
-;               | 7B16H |     bottom of stack
+;               | 7716H |     bottom of stack
 ;               |=======|
-; INITS0, TIB ->| 7B18H |     terminal input buffer
+; INITS0, TIB ->| 7718H |     terminal input buffer
 ;               |   .   |
 ;               |   .   |
 ;               | ----- |
 ;          RP  ^|   .   |     return stack pointer (go upper)
 ;               |   .   |
-;               | 7BB6H |     bottom of return stack
+;               | 77B6H |     bottom of return stack
 ;               |=======|
-;  INITR0, UP ->| 7BB8H |     top of user variables area
+;  INITR0, UP ->| 77B8H |     top of user variables area
 ;               |   :   |
 ;               |=======|
-;       FIRST ->| 7BF8H |     top of disk buffers
+;       FIRST ->| 77F8H |     top of disk buffers
 ;               |   :   |
 ;               | 7FFEH |     bottom of disk buffers
 ;               |=======|
@@ -102,7 +102,7 @@
 ;               |           |   |
 ;               |           |   |
 ;               |           |   |
-;       buffer1 |    DATA   |  512 bytes
+;       buffer1 |    DATA   |  1024 bytes
 ;               ~           ~   |
 ;               ~           ~   |
 ;               |           |   |
@@ -114,7 +114,7 @@
 ;               |           |   |
 ;               |           |   |
 ;               |           |   |
-;       buffer2 |    DATA   |  512 bytes
+;       buffer2 |    DATA   |  1024 bytes
 ;               ~           ~   |
 ;               ~           ~   |
 ;               |           |   |
