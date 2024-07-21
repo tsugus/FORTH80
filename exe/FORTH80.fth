@@ -178,7 +178,7 @@
 15 P HERE WRITE ! HERE 2+ , 10 C,  ." 15 " -->
 
 16 LIST
- 0 P ( Nuclear Words: LIT EXECUTE BRANCH 0BRANCH (LOOP (+LOOP  )
+ 0 P ( Nucleus Words: LIT EXECUTE BRANCH 0BRANCH (LOOP (+LOOP  )
  1 P ( --- n ; IP @ @ AX !  2 IP +!  APUSH )
  2 P CODE LIT 11 C, END-CODE
  3 P ( a --- ; BX @  NEXT1 )
@@ -196,7 +196,7 @@
 15 P -->
 
 17 LIST
- 0 P ( Nuclear Words: (DO  AND OR XOR SP@ SP0 RP@ )
+ 0 P ( Nucleus Words: (DO  AND OR XOR SP@ SP0 RP@ )
  1 P ( n1 n2 --- ; SWAP >R >R  NEXT )
  2 P CODE (DO) 17 C, END-CODE
  3 P ( n1 n2 --- n1+n2 )
@@ -214,7 +214,7 @@
 15 P -->
 
 18 LIST
- 0 P ( Nuclear Words: RP0 ;S >R R> R@ 0= 0< )
+ 0 P ( Nucleus Words: RP0 ;S >R R> R@ 0= 0< )
  1 P ( --- ; UP 8 + @ RP !  NEXT)
  2 P CODE RP! 24 C, END-CODE
  3 P ( --- ; RP @ @ IP !  2 IP +!  NEXT )
@@ -232,7 +232,7 @@
 15 P -->
 
 19 LIST
- 0 P ( Nuclear Words: + - D+ D- OVER DROP SWAP )
+ 0 P ( Nucleus Words: + - D+ D- OVER DROP SWAP )
  1 P ( n1 n2 --- n1+n2 )
  2 P CODE + 31 C, END-CODE
  3 P ( n1 n2 --- n1-n2 )
@@ -250,7 +250,7 @@
 15 P -->
 
 20 LIST
- 0 P ( Nuclear Words: DUP ROT U* U/ 2/ TOGGLE @ )
+ 0 P ( Nucleus Words: DUP ROT U* U/ 2/ TOGGLE @ )
  1 P ( n --- n n )
  2 P CODE DUP 38 C, END-CODE
  3 P ( n1 n2 n3 --- n2 n3 n1 )
@@ -268,7 +268,7 @@
 15 P CODE @ 44 C, END-CODE  -->
 
 21 LIST
- 0 P ( Nuclear Words: ! C! CMOVE <CMOVE FILL BYE )
+ 0 P ( Nucleus Words: ! C! CMOVE <CMOVE FILL BYE )
  1 P ( n a --- ; short *shp; shp = a; *shp = n; )
  2 P CODE ! 45 C, END-CODE
  3 P ( c a --- ; char *chp; chp = a; *chp = c; )
@@ -286,7 +286,7 @@
 15 P -->
 
 22 LIST
- 0 P ( Unique Nuclear Words: POPEN PCLOSE SET-INPUT SET-OUTPUT )
+ 0 P ( Unique Nucleus Words: POPEN PCLOSE SET-INPUT SET-OUTPUT )
  1 P ( a1 a2 --- ud1 ud2 ; call popen(a1+1,a2+1  in C-lang )
  2 P CODE POPEN 54 C, END-CODE
  3 P ( ud1 ud2 --- d ; call pclose(ud2<<32|ud1  in C-lang )
