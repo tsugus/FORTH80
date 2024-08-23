@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.6.8                       *
+; *                      Version 0.8.0                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -126,6 +126,7 @@
 ; ========== ENVIRONMENT DEPENDENT ==========
 ;
 DRSIZ	EQU	720		; drive size (KB)
+BPS	EQU	512		; bytes per sector
 ;
 ; ***** System Memory Configuration *****
 ;
@@ -179,8 +180,8 @@ WRM1	DW	WARM
 ; ***** USER VARIABLES *****
 ;
 UVR	DW	0		; (release No.)
-	DW	6		; (revision No.)
-	DW	0800H		; (user version)
+	DW	8		; (revision No.)
+	DW	0000H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -731,7 +732,40 @@ EMIT2	DW	SEMIS
 	DB	88H,'READ-RE','C'+80H
 	DW	EMIT-7
 RREC	DW	DOCOL
-	DW	READ
+	DW	LIT,BBUF0/BPS
+	DW	STAR
+	DW	LIT,BBUF0/BPS
+	DW	ZERO
+	DW	XDO		; DO
+RREC1	DW	THREE
+	DW	PICK
+	DW	THREE
+	DW	PICK
+	DW	THREE
+	DW	PICK		;  copy 3 values
+	DW	READ		;  ( n1 a n2' ef )
+	DW	DUPE
+	DW	ZBRAN,RREC2-$	;  IF ( n1 a n2' ef )
+	DW	LLEAVE
+	DW	BRAN,RREC3-$	;  ELSE ( n1 a n2' ef )
+RREC2	DW	IDO
+	DW	ONEP
+	DW	LIT,BBUF0/BPS
+	DW	LESS
+	DW	ZBRAN,RREC3-$	;   IF ( n1 a n2' ef )
+	DW	DROP		;    ( n1 a n2' )
+	DW	SWAP
+	DW	LIT,BPS
+	DW	PLUS
+	DW	SWAP
+	DW	ONEP		;    ( n1 a+128 n2'+1 )
+				;   THEN
+				;  THEN
+RREC3	DW	XLOOP,RREC1-$	; LOOP
+	DW	TOR
+	DW	TDROP
+	DW	DROP
+	DW	FROMR
 	DW	SEMIS
 ;
 ; ( n1 a n2 --- ef ; 1 block only )
@@ -742,7 +776,40 @@ RREC	DW	DOCOL
 	DB	89H,'WRITE-RE','C'+80H
 	DW	RREC-11
 WREC	DW	DOCOL
-	DW	WRITE
+	DW	LIT,BBUF0/BPS
+	DW	STAR
+	DW	LIT,BBUF0/BPS
+	DW	ZERO
+	DW	XDO		; DO
+WREC1	DW	THREE
+	DW	PICK
+	DW	THREE
+	DW	PICK
+	DW	THREE
+	DW	PICK		;  copy 3 values
+	DW	WRITE		;  ( n1 a n2' ef )
+	DW	DUPE
+	DW	ZBRAN,WREC2-$	;  IF ( n1 a n2' ef )
+	DW	LLEAVE
+	DW	BRAN,WREC3-$	;  ELSE ( n1 a n2' ef )
+WREC2	DW	IDO
+	DW	ONEP
+	DW	LIT,BBUF0/BPS
+	DW	LESS
+	DW	ZBRAN,WREC3-$	;   IF ( n1 a n2' ef )
+	DW	DROP		;    ( n1 a n2' )
+	DW	SWAP
+	DW	LIT,BPS
+	DW	PLUS
+	DW	SWAP
+	DW	ONEP		;    ( n1 a+128 n2'+1 )
+				;   THEN
+				;  THEN
+WREC3	DW	XLOOP,WREC1-$	; LOOP
+	DW	TOR
+	DW	TDROP
+	DW	DROP
+	DW	FROMR
 	DW	SEMIS
 ;
 ; 	===== constants =====
