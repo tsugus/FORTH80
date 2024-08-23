@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.8.0                       *
+; *                      Version 0.8.1                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -132,7 +132,6 @@ BPS	EQU	512		; bytes per sector
 ;
 ORIG0	EQU	0H
 BBUF0	EQU	1024		; bytes per buffer
-BSCR0	EQU	1		; blocks per screen
 BFLEN0	EQU	BBUF0+4		; buffer tags length = 4
 LIMIT0	EQU	8000H
 NUMBU0	EQU	2		; number of disk block buffers
@@ -181,7 +180,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	8		; (revision No.)
-	DW	0000H		; (user version)
+	DW	0100H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB
@@ -829,16 +828,9 @@ BBUF	DW	DOCON
 	DW	BBUF0
 ;
 ; ( --- n )
-; (bloks per screen)
-	DB	85H,'B/SC','R'+80H
-	DW	BBUF-8
-BSCR	DW	DOCON
-	DW	BSCR0
-;
-; ( --- n )
 ; (buffer length)
 	DB	85H,'BFLE','N'+80H
-	DW	BSCR-8
+	DW	BBUF-8
 BFLEN	DW	DOCON
 	DW	BFLEN0
 ;
@@ -2002,8 +1994,6 @@ PLINE	DW	DOCOL
 	DW	BBUF
 	DW	SSMOD
 	DW	FROMR
-	DW	BSCR
-	DW	STAR
 	DW	PLUS
 	DW	BLOCK
 	DW	PLUS
@@ -2866,17 +2856,9 @@ NULL	DW	DOCOL
 	DW	ZERO
 	DW	INN
 	DW	STORE
-	DW	BLK
-	DW	ATT
-	DW	BSCR
-	DW	ONEM
-	DW	ANDD
-	DW	ZEQU
-	DW	ZBRAN,NULL3-$	;  IF
 	DW	QEXEC
 	DW	FROMR
 	DW	DROP
-				;  THEN
 NULL3	DW	BRAN,NULL2-$	; ELSE
 NULL1	DW	FROMR
 	DW	DROP
@@ -3030,8 +3012,6 @@ DRZER	DW	DOCOL
 	DW	DRZER-6
 DRONE	DW	DOCOL
 	DW	LIT,DRSIZ
-	DW	BSCR
-	DW	STAR
 	DW	OFSET
 	DW	STORE
 	DW	SEMIS
@@ -3046,8 +3026,6 @@ DRONE	DW	DOCOL
 RSLW	DW	DOCOL
 	DW	TOR
 	DW	LIT,DRSIZ
-	DW	BSCR
-	DW	STAR
 	DW	SLMOD
 	DW	LROT
 	DW	FROMR
@@ -3265,8 +3243,6 @@ MESS	DW	DOCOL
 	DW	MSGSCR
 	DW	OFSET
 	DW	ATT
-	DW	BSCR
-	DW	SLASH
 	DW	SUBB
 	DW	DLINE
 	DW	SPACE
@@ -3330,8 +3306,6 @@ LOAD	DW	DOCOL
 	DW	ZERO
 	DW	INN
 	DW	STORE
-	DW	BSCR
-	DW	STAR
 	DW	BLK
 	DW	STORE
 	DW	INTER
@@ -3351,12 +3325,7 @@ ARROW	DW	DOCOL
 	DW	ZERO
 	DW	INN
 	DW	STORE
-	DW	BSCR
-	DW	BLK
-	DW	ATT
-	DW	OVER
-	DW	MODD
-	DW	SUBB
+	DW	ONE
 	DW	BLK
 	DW	PSTOR
 	DW	SEMIS
@@ -3521,8 +3490,6 @@ LIST	DW	DOCOL
 	DW	DOT
 	DW	OFSET
 	DW	ATT
-	DW	BSCR
-	DW	SLASH
 	DW	PLUS
 	DW	LIT,DRSIZ
 	DW	SLMOD

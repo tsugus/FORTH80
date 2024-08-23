@@ -9,7 +9,7 @@
  7 P (                                                             )
  8 P (                    S E L F - H O S T E D                    )
  9 P (                                                             )
-10 P (                        Version 0.8.0                        )
+10 P (                        Version 0.8.1                        )
 11 P (                                        (C  2023-2024 Tsugu  )
 12 P (             This software is released under the             )
 13 P (                         MIT License.                        )
@@ -110,7 +110,7 @@
  1 P HEX 000E _UVR !
  2 P    0 000E ! ( +0  release No. )
  3 P    8 0010 ! ( +2  revision No. )
- 4 P 0001 0012 ! ( +4  user version [0..255]*256+[0..25])
+ 4 P 0101 0012 ! ( +4  user version [0..255]*256+[0..25])
  5 P    ( 0014 ) ( +6  S0 )
  6 P    ( 0016 ) ( +8  R0 )
  7 P    ( 0018 ) ( +10 TIB )
@@ -386,10 +386,10 @@
  7 P : ( ( --- ; skip input stream until right parenthesis )
  8 P   29 ( right parenthesis code ) WORD DROP ; IMMEDIATE
  9 P : LOAD ( --- ; interpret screen )
-10 P   BLK @ >R >IN @ >R 0 >IN ! B/SCR * BLK !
+10 P   BLK @ >R >IN @ >R 0 >IN ! BLK !
 11 P   INTERPRET R> >IN ! R> BLK ! ;
 12 P : --> ( --- ; continue interpreting next screen )
-13 P   ?LOADING 0 >IN ! B/SCR BLK @ OVER MOD - BLK +! ; IMMEDIATE
+13 P   ?LOADING 0 >IN ! 1 BLK +! ; IMMEDIATE
 14 P  
 15 P -->
 
@@ -435,17 +435,17 @@
  2 P             0 CONSTANT ORIGIN ( origin )
  3 P HEX      8000 CONSTANT LIMIT  ( limit of memory region )
  4 P           400 CONSTANT B/BUF  ( bytes per buffer )
- 5 P             1 CONSTANT B/SCR  ( blocks per screen )
- 6 P             2 CONSTANT #BUFF  ( number of buffers )
- 7 P     B/BUF 4 + CONSTANT BFLEN  ( buffer length )
- 8 P LIMIT BFLEN #BUFF * - CONSTANT FIRST ( top of disk buffers )
- 9 P   FIRST UVs - CONSTANT UP     ( top of user variable area )
-10 P            20 CONSTANT BL     ( blank ' ' code )
-11 P            40 CONSTANT C/L    ( characters per line )
-12 P             0 CONSTANT 0   1 CONSTANT 1   2 CONSTANT 2
-13 P             3 CONSTANT 3  -1 CONSTANT -1
-14 P            50 CONSTANT TIBLEN ( text input buffer length )
-15 P             4 CONSTANT MSGSCR ( message screen )  -->
+ 5 P             2 CONSTANT #BUFF  ( number of buffers )
+ 6 P     B/BUF 4 + CONSTANT BFLEN  ( buffer length )
+ 7 P LIMIT BFLEN #BUFF * - CONSTANT FIRST ( top of disk buffers )
+ 8 P   FIRST UVs - CONSTANT UP     ( top of user variable area )
+ 9 P            20 CONSTANT BL     ( blank ' ' code )
+10 P            40 CONSTANT C/L    ( characters per line )
+11 P             0 CONSTANT 0   1 CONSTANT 1   2 CONSTANT 2
+12 P             3 CONSTANT 3  -1 CONSTANT -1
+13 P            50 CONSTANT TIBLEN ( text input buffer length )
+14 P             4 CONSTANT MSGSCR ( message screen )
+15 P -->
 
 31 LIST
  0 P ( * Umbilical "Variables", Umbilical Words: 'null' )
@@ -455,11 +455,11 @@
  4 P  
  5 P HEX 8081 HERE  DUP null's_NFA !
  6 P : x ( --- ) BLK @
- 7 P   IF ( disk ) 1 BLK +! 0 >IN ! BLK @ B/SCR 1- AND 0=
- 8 P     IF ?EXEC R> DROP THEN
- 9 P   ELSE ( terminal ) R> DROP
-10 P   THEN ;
-11 P ! IMMEDIATE ( x is replaced by null code )
+ 7 P   IF ( disk ) 1 BLK +! 0 >IN ! ?EXEC R> DROP
+ 8 P   ELSE ( terminal ) R> DROP
+ 9 P   THEN ;
+10 P ! IMMEDIATE ( x is replaced by null code )
+11 P  
 12 P  
 13 P  
 14 P  
@@ -720,7 +720,7 @@
 46 LIST
  0 P ( R/W )
  1 P : R/W     ( a n f --- ; read if f=1, write if f=0 )
- 2 P   >R [ DRSIZE ] LITERAL B/SCR * /MOD <ROT R>
+ 2 P   >R [ DRSIZE ] LITERAL /MOD <ROT R>
  3 P   IF READ-REC 8 ( error #8 )
  4 P   ELSE WRITE-REC 9 ( error #9 )
  5 P   THEN
@@ -762,7 +762,7 @@
  5 P : SAVE-BUFFERS  ( --- )
  6 P   #BUFF 1+ 0 DO 0 BUFFER DROP LOOP ;
  7 P : DR0 ( --- ) 0 OFFSET ! ;
- 8 P : DR1 ( --- ) [ DRSIZE ] LITERAL B/SCR * OFFSET ! ;
+ 8 P : DR1 ( --- ) [ DRSIZE ] LITERAL OFFSET ! ;
  9 P  
 10 P  
 11 P  
@@ -783,7 +783,7 @@
  8 P   THEN R> DROP 2+ ( data area ) ;
  9 P  
 10 P : (LINE) ( line scr --- a n ; get a screen line )
-11 P   >R C/L B/BUF */MOD R> B/SCR * + BLOCK + C/L ;
+11 P   >R C/L B/BUF */MOD R> + BLOCK + C/L ;
 12 P  
 13 P : .LINE ( line scr --- ; type out a screen line )
 14 P   (LINE) -TRAILING TYPE ;
@@ -829,7 +829,7 @@
  0 P ( MESSAGE ERROR ?ERROR )
  1 P : MESSAGE ( n --- ; output n'th message )
  2 P   WARNING @
- 3 P   IF ?DUP IF MSGSCR OFFSET @ B/SCR / - .LINE SPACE THEN
+ 3 P   IF ?DUP IF MSGSCR OFFSET @ - .LINE SPACE THEN
  4 P   ELSE ." MSG #" .
  5 P   THEN ;
  6 P  
@@ -1047,7 +1047,7 @@
  2 P   IF SP@ S0 @ 2- DO I @ . -2 +LOOP THEN ;
  3 P  
  4 P : LIST ( n --- ) BASE @ DECIMAL SWAP CR DUP DUP SCR !
- 5 P   ." SCR # " . OFFSET @ B/SCR / + [ DRSIZE ] LITERAL /MOD
+ 5 P   ." SCR # " . OFFSET @ + [ DRSIZE ] LITERAL /MOD
  6 P   ."  ( Drive " . ." # " . ." )" 10 0
  7 P   DO CR I 3 .R SPACE I SCR @ (LINE) TYPE 3C ( '<' ) EMIT LOOP
  8 P   CR BASE ! ;
@@ -1225,11 +1225,11 @@
 74 LIST
  0 P ( Umbilical Words' Parameter Fields Update #8 )
  1 P ' LOAD
- 2 P : LOAD  BLK @ >R >IN @ >R 0 >IN ! B/SCR * BLK !
+ 2 P : LOAD  BLK @ >R >IN @ >R 0 >IN ! BLK !
  3 P   INTERPRET R> >IN ! R> BLK ! ;
  4 P WORD-UPDATE FORGET LOAD
  5 P ' -->
- 6 P : -->  ?LOADING 0 >IN ! B/SCR BLK @ OVER MOD - BLK +! ;
+ 6 P : -->  ?LOADING 0 >IN ! 1 BLK +! ;
  7 P WORD-UPDATE FORGET -->
  8 P  
  9 P  
@@ -1280,11 +1280,11 @@
  0 P ( Umbilical Words' Parameter Fields Update #11 )
  1 P null's_NFA @ PFA
  2 P : x  BLK @
- 3 P   IF 1 BLK +! 0 >IN ! BLK @ B/SCR 1- AND 0=
- 4 P     IF ?EXEC R> DROP THEN
- 5 P   ELSE R> DROP
- 6 P   THEN ;
- 7 P WORD-UPDATE FORGET WORD-UPDATE
+ 3 P   IF 1 BLK +! 0 >IN ! ?EXEC R> DROP
+ 4 P   ELSE R> DROP
+ 5 P   THEN ;
+ 6 P WORD-UPDATE FORGET WORD-UPDATE
+ 7 P  
  8 P  
  9 P  
 10 P  
