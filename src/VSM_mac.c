@@ -5,7 +5,7 @@
 /*                                                           */
 /*                            for                            */
 /*                                                           */
-/*                F O R T H 8 0  ver. 0.6.8 ~                */
+/*                F O R T H 8 0  ver. 0.8.0 ~                */
 /*                                                           */
 /*                                                           */
 /*                A FORTH langage proccessor                 */
@@ -13,7 +13,7 @@
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.7.3                       */
+/*                       Version 0.8.0                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -26,8 +26,8 @@
 /**************************************************************/
 
 #define MAJOR_V 0
-#define MINOR_V 7
-#define USER_V 3
+#define MINOR_V 8
+#define USER_V 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +37,7 @@
 #define WRM1 0x000C
 #define UVR 0x000E
 #define UP 0x77B8
-#define SECTOR_SIZE 1024
+#define BPS 512
 
 unsigned char Memory[LIMIT];
 int PC = 0;                   // Program Counter
@@ -187,11 +187,11 @@ void READ() // 1 sector only
     return;
   }
 
-  int r1 = fseek(fp, SECTOR_SIZE * W, SEEK_SET);
+  int r1 = fseek(fp, BPS * W, SEEK_SET);
   if (!r1)
   {
-    int r2 = fread(Memory + BX, sizeof(unsigned char), SECTOR_SIZE, fp);
-    if (r2 < SECTOR_SIZE)
+    int r2 = fread(Memory + BX, sizeof(unsigned char), BPS, fp);
+    if (r2 < BPS)
       AX = 1; // Error Flag
     else
       AX = 0;
@@ -232,11 +232,11 @@ void WRITE() // 1 sctor only
     return;
   }
 
-  int r1 = fseek(fp, SECTOR_SIZE * W, SEEK_SET);
+  int r1 = fseek(fp, BPS * W, SEEK_SET);
   if (!r1)
   {
-    int r2 = fwrite(Memory + BX, sizeof(unsigned char), SECTOR_SIZE, fp);
-    if (r2 < SECTOR_SIZE)
+    int r2 = fwrite(Memory + BX, sizeof(unsigned char), BPS, fp);
+    if (r2 < BPS)
       AX = 1; // Error Flag
     else
       AX = 0;
