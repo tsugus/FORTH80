@@ -11,7 +11,7 @@
 ; *                                                          *
 ; *                     in MASM Assembly                     *
 ; *                                                          *
-; *                      Version 0.8.1                       *
+; *                      Version 0.8.2                       *
 ; *                                                          *
 ; *                                     (C) 2023-2024 Tsugu  *
 ; *                                                          *
@@ -180,7 +180,7 @@ WRM1	DW	WARM
 ;
 UVR	DW	0		; (release No.)
 	DW	8		; (revision No.)
-	DW	0100H		; (user version)
+	DW	0200H		; (user version)
 	DW	INITS0		; S0
 	DW	INITR0		; R0
 	DW	INITS0		; TIB

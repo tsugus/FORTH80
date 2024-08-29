@@ -9,7 +9,7 @@
  7 P (                                                             )
  8 P (                    S E L F - H O S T E D                    )
  9 P (                                                             )
-10 P (                        Version 0.8.1                        )
+10 P (                        Version 0.8.2                        )
 11 P (                                        (C  2023-2024 Tsugu  )
 12 P (             This software is released under the             )
 13 P (                         MIT License.                        )
@@ -110,7 +110,7 @@
  1 P HEX 000E _UVR !
  2 P    0 000E ! ( +0  release No. )
  3 P    8 0010 ! ( +2  revision No. )
- 4 P 0101 0012 ! ( +4  user version [0..255]*256+[0..25])
+ 4 P 0201 0012 ! ( +4  user version [0..255]*256+[0..25])
  5 P    ( 0014 ) ( +6  S0 )
  6 P    ( 0016 ) ( +8  R0 )
  7 P    ( 0018 ) ( +10 TIB )
@@ -425,11 +425,47 @@
 10 P     IF LEAVE ELSE I 1+ [ B/BUF BPS / ] LITERAL <
 11 P       IF DROP SWAP [ BPS ] LITERAL + SWAP 1+ THEN THEN
 12 P   LOOP >R 2DROP DROP R> ;
-13 P ( set the end of word search at START's lfa )
+13 P  
 14 P  
 15 P -->
 
 30 LIST
+ 0 P ( * Umbilical Words: 'null' )
+ 1 P HEX 8081 HERE  DUP null's_NFA !
+ 2 P : x ( --- ) BLK @
+ 3 P   IF ( disk ) 1 BLK +! 0 >IN ! ?EXEC R> DROP
+ 4 P   ELSE ( terminal ) R> DROP
+ 5 P   THEN ;
+ 6 P ! IMMEDIATE ( x is replaced by null code )
+ 7 P  
+ 8 P  
+ 9 P  
+10 P  
+11 P  
+12 P  
+13 P  
+14 P  
+15 P -->
+
+31 LIST
+ 0 P ( ** Umbilical "Variables" )
+ 1 P        USE CONSTANT USE        ( using buffer )
+ 2 P       PREV CONSTANT PREV       ( previous buffer )
+ 3 P DISK-ERROR CONSTANT DISK-ERROR ( disk error )
+ 4 P  
+ 5 P  
+ 6 P  
+ 7 P  
+ 8 P  
+ 9 P  
+10 P  
+11 P  
+12 P  
+13 P  
+14 P  
+15 P -->
+
+32 LIST
  0 P ( Constants )
  1 P : CONSTANT  CREATE [ HERE 1 th_patch ! ] , DOES> @ ;
  2 P             0 CONSTANT ORIGIN ( origin )
@@ -447,27 +483,9 @@
 14 P             4 CONSTANT MSGSCR ( message screen )
 15 P -->
 
-31 LIST
- 0 P ( * Umbilical "Variables", Umbilical Words: 'null' )
- 1 P        USE CONSTANT USE        ( using buffer )
- 2 P       PREV CONSTANT PREV       ( previous buffer )
- 3 P DISK-ERROR CONSTANT DISK-ERROR ( disk error )
- 4 P  
- 5 P HEX 8081 HERE  DUP null's_NFA !
- 6 P : x ( --- ) BLK @
- 7 P   IF ( disk ) 1 BLK +! 0 >IN ! ?EXEC R> DROP
- 8 P   ELSE ( terminal ) R> DROP
- 9 P   THEN ;
-10 P ! IMMEDIATE ( x is replaced by null code )
-11 P  
-12 P  
-13 P  
-14 P  
-15 P -->
-
-32 LIST
+33 LIST
  0 P ( User Variables +6 -- +28 )
- 1 P : USER CREATE [ HERE 2 th_patch ! ] , DOES> @ UP + ;
+ 1 P : USER  CREATE [ HERE 2 th_patch ! ] , DOES> @ UP + ;
  2 P DECIMAL
  3 P  6 USER S0         ( stack pointer zero position )
  4 P  8 USER R0         ( return stack pointer zero position )
@@ -483,7 +501,7 @@
 14 P 28 USER SCR        ( screen )
 15 P -->
 
-33 LIST
+34 LIST
  0 P ( User Variables +30 -- +50 )
  1 P 30 USER OFFSET     ( drive bytes offset )
  2 P 32 USER CONTEXT    ( context vocabulary )
@@ -501,7 +519,7 @@
 14 P  
 15 P -->
 
-34 LIST
+35 LIST
  0 P ( Unique Constats and Unique User Variables )
  1 P   ( screens per drive )
  2 P     DRSIZE CONSTANT SCR/DRIVE
@@ -519,7 +537,7 @@
 14 P  
 15 P -->
 
-35 LIST
+36 LIST
  0 P ( ?TERMINAL )
  1 P : ?TERMINAL ( --- f ) CTST [ CTST @ HERE 2- ! ] ;
  2 P  
@@ -537,7 +555,7 @@
 14 P  
 15 P -->
 
-36 LIST
+37 LIST
  0 P ( DECIMAL HEX 1+ 2+ 1- 2- 2* C@ 2DUP 2DROP 2@ )
  1 P : DECIMAL ( --- ) 10 BASE ! ;
  2 P : HEX ( --- ) 16 BASE ! ;
@@ -553,9 +571,9 @@
 12 P : 2DROP ( n1 n2 --- ) DROP DROP ;
 13 P : 2@ ( a --- d ) DUP @ SWAP 2+ @ ;
 14 P  
-15 P ." 36 " -->
+15 P ." 37 " -->
 
-37 LIST
+38 LIST
  0 P ( = <> < > TRAVERSE NFA LFA CFA PFA )
  1 P : = ( n1 n2 --- f ) - 0= ;
  2 P : < ( n1 n2 --- f ) - 0< ;
@@ -571,9 +589,9 @@
 12 P : PFA ( nfa --- pfa ) 1 TRAVERSE 5 + ;
 13 P  
 14 P  
-15 P ." 37 " -->
+15 P ." 38 " -->
 
-38 LIST
+39 LIST
  0 P ( +! HERE ALLOT , C, LATEST NEGATE DNEGATE <ROT )
  1 P : +! ( n a --- ) SWAP OVER @ + SWAP ! ;
  2 P : HERE ( --- a ) DP @ ;
@@ -589,9 +607,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 38 " -->
+15 P ." 39 " -->
 
-39 LIST
+40 LIST
  0 P ( LITERAL DLITERAL DEFINITIONS VARIABLE 2CONSTANT 2VARIABLE )
  1 P : LITERAL ( n --- ) STATE @ IF COMPILE LIT , THEN ; IMMEDIATE
  2 P : DLITERAL ( d --- ) STATE @
@@ -607,9 +625,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 39 " -->
+15 P ." 40 " -->
 
-40 LIST
+41 LIST
  0 P ( PAD SMUDGE +ORIGIN I J LEAVE NOT ERASE BLANKS )
  1 P : PAD ( --- a ) HERE [ WORDBUFSIZE ] LITERAL + ;
  2 P : SMUDGE ( --- ) LATEST 20 ( 0b 10 0000 ) TOGGLE ;
@@ -625,9 +643,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 40 " -->
+15 P ." 41 " -->
 
-41 LIST
+42 LIST
  0 P ( 0> U< 0< MIN MAX +- ABS D+- DABS ?DUP )
  1 P : <> ( n1 n2 --- f ) = NOT ;
  2 P : 0> ( n1 n2 --- f ) 0 > ;
@@ -643,9 +661,9 @@
 12 P : ?DUP ( n --- n n / 0 ) DUP IF DUP THEN ;
 13 P  
 14 P  
-15 P ." 41 " -->
+15 P ." 42 " -->
 
-42 LIST
+43 LIST
  0 P ( S->D M* * M/MOD M/ /MOD */MOD MOD / )
  1 P : S->D ( n --- d ) DUP 0< IF -1 ELSE 0 THEN ;
  2 P : M* ( n1 n2 --- d ) 2DUP XOR >R ABS SWAP ABS U* R> D+- ;
@@ -661,9 +679,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 42 " -->
+15 P ." 43 " -->
 
-43 LIST
+44 LIST
  0 P ( HOLD # #S <# #> SIGN )
  1 P : HOLD ( c --- ) -1 HLD +! HLD @ C! ;
  2 P : # ( ud1 --- ud2 ) BASE @ M/MOD ROT 9 OVER <
@@ -679,9 +697,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 43 " -->
+15 P ." 44 " -->
 
-44 LIST
+45 LIST
  0 P ( COUT TYPE CR SPACE SPACES -TRAILING )
  1 P : COUNT ( a --- a+1 n ) DUP 1+ SWAP C@ ;
  2 P : TYPE ( a n --- ) ?DUP
@@ -697,9 +715,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 44 " -->
+15 P ." 45 " -->
 
-45 LIST
+46 LIST
  0 P ( D.R D. U. .R . )
  1 P : D.R ( d n --- ) >R SWAP OVER DABS <# #S SIGN #>
  2 P   R> OVER - SPACES TYPE ;
@@ -715,9 +733,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 45 " -->
+15 P ." 46 " -->
 
-46 LIST
+47 LIST
  0 P ( R/W )
  1 P : R/W     ( a n f --- ; read if f=1, write if f=0 )
  2 P   >R [ DRSIZE ] LITERAL /MOD <ROT R>
@@ -733,9 +751,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 46 " -->
+15 P ." 47 " -->
  
-47 LIST
+48 LIST
  0 P ( +BUF BUFFER )
  1 P : +BUF ( a1 --- a2 f ; advance to next buffer address )
  2 P   BFLEN + DUP LIMIT =
@@ -751,9 +769,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 47 " -->
+15 P ." 48 " -->
 
-48 LIST
+49 LIST
  0 P ( UPDATE UPDATE EMPTY-BUFFERS SAVE-BUFFERS DR0 DR1 )
  1 P : UPDATE ( ---  )
  2 P   PREV @ @ 8000 ( set the MSB ) OR PREV @ ! ;
@@ -769,9 +787,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 48 " -->
+15 P ." 49 " -->
 
-49 LIST
+50 LIST
  0 P ( BLOCK (LINE  .LINE )
  1 P : BLOCK ( n --- a ; get buffer address for block n )
  2 P   OFFSET @ + >R PREV @ DUP @ R@ - 2* ( disregard UPDATE bit )
@@ -787,9 +805,9 @@
 12 P  
 13 P : .LINE ( line scr --- ; type out a screen line )
 14 P   (LINE) -TRAILING TYPE ;
-15 P ." 49 " -->
+15 P ." 50 " -->
 
-50 LIST
+51 LIST
  0 P ( ENCLOSE WORD )
  1 P : ENCLOSE ( a c --- a n1 n2 n3 ) OVER DUP >R
  2 P   BEGIN
@@ -805,9 +823,9 @@
 12 P   >IN @ + SWAP ENCLOSE HERE [ MAXTOKEN 2+ ] LITERAL BLANKS
 13 P   >IN +! OVER - >R R@ HERE C! + HERE 1+ R> CMOVE HERE ;
 14 P  
-15 P ." 50 " -->
+15 P ." 51 " -->
 
-51 LIST
+52 LIST
  0 P ( (FIND  FIND )
  1 P : (FIND) ( a1 a2 --- a ff )
  2 P   BEGIN
@@ -823,9 +841,9 @@
 12 P  
 13 P : FIND ( --- cfa / 0 ; FIND <name> )
 14 P   BL WORD CONTEXT @ @ (FIND) DUP 0=
-15 P   IF DROP HERE LATEST (FIND) THEN ;  ." 51 " -->
+15 P   IF DROP HERE LATEST (FIND) THEN ;  ." 52 " -->
 
-52 LIST
+53 LIST
  0 P ( MESSAGE ERROR ?ERROR )
  1 P : MESSAGE ( n --- ; output n'th message )
  2 P   WARNING @
@@ -841,9 +859,9 @@
 12 P  
 13 P : ?ERROR    ( f n --- ; execute ERROR on true flag )
 14 P    SWAP IF ERROR ELSE DROP THEN ;
-15 P LATEST PFA CFA 3 th_patch @ !  ." 52 " -->
+15 P LATEST PFA CFA 3 th_patch @ !  ." 53 " -->
 
-53 LIST
+54 LIST
  0 P ( ?COMP ?EXEC ?STACK ?PAIRS ?LOADING ?CSP !CSP )
  1 P : ?COMP ( --- ) STATE @ 0= 11 ?ERROR ;
  2 P : ?EXEC ( --- ) STATE @ 12 ?ERROR ;
@@ -859,9 +877,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 53 " -->
+15 P ." 54 " -->
 
-54 LIST
+55 LIST
  0 P ( ' VOCABULARY FORGET )
  1 P : ' ( --- pfa : execution ; --- : compiling ; ' <name> )
  2 P   FIND 2+ ( cfa -> pfa ) ?DUP 0= 0 ?ERROR [COMPILE] LITERAL ;
@@ -877,9 +895,9 @@
 12 P   18 ?ERROR [COMPILE] ' DUP FENCE @ < 15 ?ERROR
 13 P   DUP NFA DP ! LFA @ CURRENT @ ! ;
 14 P  
-15 P ." 54 " -->
+15 P ." 55 " -->
 
-55 LIST
+56 LIST
  0 P ( <MARK >MARK <RESOLVE >RESOLVE )
  1 P : <MARK ( --- a ) HERE ;
  2 P : >MARK ( --- a ) HERE 0 , ;
@@ -895,9 +913,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 55 " -->
+15 P ." 56 " -->
 
-56 LIST
+57 LIST
  0 P ( PICK RPICK DEPTH ROLL <ROLL )
  1 P : PICK ( n1 --- n2 ) 2* SP@ + @ ;
  2 P : RPICK ( n1 --- n2 ) 2* RP@ + @ ;
@@ -913,9 +931,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 56 "-->
+15 P ." 57 "-->
 
-57 LIST
+58 LIST
  0 P ( DIGIT )
  1 P : DIGIT ( c n1 --- n2 tf / ff )
  2 P   SWAP 30 ( '0' ) - DUP 0<
@@ -931,9 +949,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 57 " -->
+15 P ." 58 " -->
 
-58 LIST
+59 LIST
  0 P ( CONVERT NUMBER )
  1 P : CONVERT ( d a --- d' a' )
  2 P   BEGIN 1+ DUP >R C@ BASE @ DIGIT
@@ -949,9 +967,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 58 " -->
+15 P ." 59 " -->
 
-59 LIST
+60 LIST
  0 P ( INTERPRET )
  1 P : INTERPRET ( ---  )
  2 P   BEGIN FIND ?DUP
@@ -967,9 +985,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 59 " -->
+15 P ." 60 " -->
 
-60 LIST
+61 LIST
  0 P ( EXPECT )
  1 P : EXPECT ( a n --- ) OVER + OVER
  2 P   DO KEY DUP 8 ( backspace code ) =
@@ -985,9 +1003,9 @@
 12 P     ELSE DUP 0A ( LF code ) = IF LEAVE DROP BL 0 ELSE DUP THEN
 13 P     I C! 0 I 1+ !
 14 P     THEN ECHO @ IF EMIT ELSE DROP THEN
-15 P   LOOP DROP ;  ." 60 "-->
+15 P   LOOP DROP ;  ." 61 "-->
 
-61 LIST
+62 LIST
  0 P ( QUERY QUIT ABORT )
  1 P : QUERY ( --- ) TIB @ TIBLEN EXPECT 0 >IN ! ;
  2 P  
@@ -1003,9 +1021,9 @@
 12 P   UVR 5 + C@ 0.0 D.R UVR 4 + C@ 41 ( 'A' ) + EMIT
 13 P   SP! DECIMAL DR0 FORTH DEFINITIONS QUIT ;
 14 P LATEST PFA CFA 4 th_patch @ !
-15 P ." 61 " -->
+15 P ." 62 " -->
 
-62 LIST
+63 LIST
  0 P ( ID. (CREATE )
  1 P : ID. ( nfa --- ; print word's name )
  2 P   DUP PFA LFA OVER - PAD SWAP CMOVE PAD COUNT 1F AND
@@ -1021,9 +1039,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 62 " -->
+15 P ." 63 " -->
 
-63 LIST
+64 LIST
  0 P ( ASSEMBLER CODE END-CODE ;CODE )
  1 P VOCABULARY ASSEMBLER IMMEDIATE
  2 P : CODE ( --- ; CODE <name> ) (CREATE) SMUDGE ASSEMBLER ;
@@ -1039,9 +1057,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 63 " -->
+15 P ." 64 " -->
 
-64 LIST
+65 LIST
  0 P ( .S LIST )
  1 P : .S ( --- ) SP@ S0 @ = 0=
  2 P   IF SP@ S0 @ 2- DO I @ . -2 +LOOP THEN ;
@@ -1057,9 +1075,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 64 " -->
+15 P ." 65 " -->
 
-65 LIST
+66 LIST
  0 P ( Unique Words: "r" "w" "r+" )
  1 P VARIABLE "r" 1 "r" ! 72 C,
  2 P VARIABLE "w" 1 "w" ! 77 C,
@@ -1075,9 +1093,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 65 " -->
+15 P ." 66 " -->
 
-66 LIST
+67 LIST
  0 P ( 79-STANDARD & Patch )
  1 P : 79-STANDARD ;
  2 P  
@@ -1093,9 +1111,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 66 " -->
+15 P ." 67 " -->
 
-67 LIST
+68 LIST
  0 P ( Umbilical Words' Parameter Fields Update #1 )
  1 P : WORD-UPDATE ( a --- ; pfa a DP-pfa CMOVE )
  2 P   LATEST PFA HERE OVER - ROT SWAP CMOVE ;
@@ -1111,9 +1129,9 @@
 12 P : ;  ?CSP COMPILE ;S SMUDGE [COMPILE] [ ;
 13 P WORD-UPDATE FORGET ;
 14 P  
-15 P ." 67 " -->
+15 P ." 68 " -->
 
-68 LIST
+69 LIST
  0 P ( Umbilical Words' Parameter Fields Update #2 )
  1 P ' (;CODE)
  2 P : (;CODE)  R> LATEST 1 TRAVERSE 3 + ! ;
@@ -1129,9 +1147,9 @@
 12 P HEX
 13 P ' IMMEDIATE
 14 P : IMMEDIATE  LATEST 40 TOGGLE ;
-15 P WORD-UPDATE FORGET IMMEDIATE  ." 68 " -->
+15 P WORD-UPDATE FORGET IMMEDIATE  ." 69 " -->
 
-69 LIST
+70 LIST
  0 P ( Umbilical Words' Parameter Fields Update #3 )
  1 P ' COMPILE
  2 P : COMPILE  ?COMP R> DUP 2+ >R @ , ;
@@ -1147,9 +1165,9 @@
 12 P : ]  0C0  STATE ! ;
 13 P WORD-UPDATE FORGET ]
 14 P  
-15 P ." 69 " -->
+15 P ." 70 " -->
 
-70 LIST
+71 LIST
  0 P ( Umbilical Words' Parameter Fields Update #4 )
  1 P ' IF
  2 P : IF  ?COMP COMPILE 0BRANCH >MARK 1 ;
@@ -1165,9 +1183,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 70 " -->
+15 P ." 71 " -->
 
-71 LIST
+72 LIST
  0 P ( Umbilical Words' Parameter Fields Update #5 )
  1 P HEX
  2 P ' DO
@@ -1183,9 +1201,9 @@
 12 P : EXIT  ?COMP COMPILE ;S ;
 13 P WORD-UPDATE FORGET EXIT
 14 P  
-15 P ." 71 " -->
+15 P ." 72 " -->
 
-72 LIST
+73 LIST
  0 P ( Umbilical Words' Parameter Fields Update #6 )
  1 P ' BEGIN
  2 P : BEGIN  ?COMP <MARK 3 ;
@@ -1201,9 +1219,9 @@
 12 P WORD-UPDATE FORGET WHILE
 13 P ' REPEAT
 14 P : REPEAT  4 ?PAIRS COMPILE BRANCH SWAP <RESOLVE >RESOLVE ;
-15 P WORD-UPDATE FORGET REPEAT   ." 72 " -->
+15 P WORD-UPDATE FORGET REPEAT   ." 73 " -->
 
-73 LIST
+74 LIST
  0 P ( Umbilical Words' Parameter Fields Update #7 )
  1 P ' (.")
  2 P : (.")  R@ COUNT DUP 1+ R> + >R TYPE ;
@@ -1220,9 +1238,9 @@
 13 P  
 15 P  
 14 P  
-15 P ." 73 " -->
+15 P ." 74 " -->
 
-74 LIST
+75 LIST
  0 P ( Umbilical Words' Parameter Fields Update #8 )
  1 P ' LOAD
  2 P : LOAD  BLK @ >R >IN @ >R 0 >IN ! BLK !
@@ -1238,9 +1256,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 74 " -->
+15 P ." 75 " -->
 
-75 LIST
+76 LIST
  0 P ( Umbilical Words' Parameter Fields Update #9 )
  1 P ' COLD  : COLD  [ _UVR @ ] LITERAL UP [ UVREND @ _UVR @ - 2+ ]
  2 P           LITERAL CMOVE EMPTY-BUFFERS ABORT ;
@@ -1256,9 +1274,9 @@
 12 P WORD-UPDATE FORGET EMIT
 13 P  
 14 P  
-15 P ." 75 " -->
+15 P ." 76 " -->
 
-76 LIST
+77 LIST
  0 P ( Umbilical Words' Parameter Fields Update #10 )
  1 P ' READ-REC  : READ-REC
  2 P   [ B/BUF BPS / ] LITERAL * [ B/BUF BPS / ] LITERAL 0
@@ -1274,9 +1292,9 @@
 12 P       IF DROP SWAP [ BPS ] LITERAL + SWAP 1+ THEN THEN
 13 P   LOOP >R 2DROP DROP R> ;
 14 P WORD-UPDATE FORGET WRITE-REC
-15 P ." 76 " -->
+15 P ." 77 " -->
 
-77 LIST
+78 LIST
  0 P ( Umbilical Words' Parameter Fields Update #11 )
  1 P null's_NFA @ PFA
  2 P : x  BLK @
@@ -1292,9 +1310,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 77 " -->
+15 P ." 78 " -->
 
-78 LIST ( Vocabulary Patch )
+79 LIST ( Vocabulary Patch )
  0 P ' 79-STANDARD NFA  FIND FORTH 4 +      !
  1 P                 0  FIND FORTH 6 +      !
  2 P ' 79-STANDARD NFA  FIND ASSEMBLER 4 +  !
@@ -1310,9 +1328,9 @@
 12 P  
 13 P  
 14 P  
-15 P ." 78 " DECIMAL ;S
+15 P ." 79 " DECIMAL ;S
 
-79 LIST
+80 LIST
  0 P ( ***** Memory Map *****                                      )
  1 P (                                                             )
  2 P (               |=======|                                     )
@@ -1330,7 +1348,7 @@
 14 P (          DP  v|   x   |  |  dictionary pointer (go under)
 15 P (               |   .   |  |  word buffer (70 bytes)
 
-80 LIST
+81 LIST
  0 P (               |   .   |  |                                  )
  1 P (               | ----- | temporary buffer area (151 bytes)
  2 P (         PAD  v| x+46H |  |                                  )
@@ -1348,7 +1366,7 @@
 14 P (               |   .   |                                     )
 15 P (               |   .   |                                     )
 
-81 LIST
+82 LIST
  0 P (               | ----- |                                     )
  1 P (          BP  ^|   .   |     return stack pointer (go upper)
  2 P (               |   .   |                                     )
@@ -1366,7 +1384,7 @@
 14 P (                                                             )
 15 P (                                                             )
 
-82 LIST
+83 LIST
  0 P ( ***** Registers Set ******                                  )
  1 P (                                                             )
  2 P ( the 16 bit "virtual" registers used in this system :        )
@@ -1384,7 +1402,7 @@
 14 P (                                                             )
 15 P (                                                             )
 
-83 LIST
+84 LIST
  0 P ( ***** Disk Buffer's Structure *****                         )
  1 P (                                                             )
  2 P (               |===========| f: update flag                  )
@@ -1402,7 +1420,7 @@
 14 P (               |===========|                                 )
 15 P (               | f |   n   |                                 )
 
-84 LIST
+85 LIST
  0 P (               |-----------| -----                           )
  1 P (               |           |   |                             )
  2 P (               |           |   |                             )
