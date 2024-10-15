@@ -3,8 +3,8 @@
  1 P (                                                             ) 
  2 P (                     F  O  R  T  H  8  0                     )
  3 P (                                                             )
- 4 P (                  A FORTH langage proccessor                 )
- 5 P (                conformiting FORTH-79 Standard               )
+ 4 P (                  A FORTH language processor                 )
+ 5 P (                 conforming FORTH-79 Standard                )
  6 P (          ( Requires a dedicated "virtual machine" )
  7 P (                                                             )
  8 P (                    S E L F - H O S T E D                    )
@@ -17,7 +17,7 @@
 15 P ( ************************************************************)
 
 7 LIST
- 0 P ( FORTH80 restructing -- Start Up )
+ 0 P ( FORTH80 restructuring -- Start Up )
  1 P ( Note! This screen should be input directly, not be loaded.  )
  2 P ( The following program repositions and rebuilds the FORTH    )
  3 P ( dictionary to the START address and late.                   )
@@ -37,8 +37,8 @@
 8 LIST
  0 P ( Preparation #1 )
  1 P HEX
- 2 P 0 CONSTANT NOP ( NOP's opecode in FORTH80's VM )
- 3 P 1 CONSTANT JMP ( JMP's opecode in FORTH80's VM )
+ 2 P 0 CONSTANT NOP ( NOP's opcode in FORTH80's VM )
+ 3 P 1 CONSTANT JMP ( JMP's opcode in FORTH80's VM )
  4 P VARIABLE CLD                  VARIABLE WRM
  5 P VARIABLE _UVR                 VARIABLE UVREND
  6 P VARIABLE CTST
@@ -162,15 +162,15 @@
 15 LIST
  0 P ( Inner Words: CTST CIN STIN COUT POUT READ WRITE )
  1 P DECIMAL
- 2 P ( --- 0 / 1 [hit] ; take a type-state of a keybord )
+ 2 P ( --- 0 / 1 [hit] ; take a type-state of a keyboard )
  3 P HERE CTST ! HERE 2+ , 4 C,
- 4 P ( --- c ; input a character from a keybord )
+ 4 P ( --- c ; input a character from a keyboard )
  5 P HERE CIN ! HERE 2+ , 5 C,
  6 P ( --- ; input a character from "stdin" )
  7 P HERE STIN ! HERE 2+ , 6 C,
- 8 P ( c --- ; output the cahracter c [to "stderr"] )
+ 8 P ( c --- ; output the character c [to "stderr"] )
  9 P HERE COUT ! HERE 2+ , 7 C,
-10 P ( c --- ; printout the cahracter c to "stdout" )
+10 P ( c --- ; printout the character c to "stdout" )
 11 P HERE POUT ! HERE 2+ , 8 C,
 12 P ( sector_No address drive_No --- 0 / 1 [error] ; load )
 13 P HERE READ ! HERE 2+ , 9 C,
@@ -493,7 +493,7 @@
  6 P 12 USER WIDTH
  7 P 14 USER WARNING
  8 P 16 USER FENCE      ( fence for FORGETing )
- 9 P 18 USER DP         ( dicitionary pointer )
+ 9 P 18 USER DP         ( dictionary pointer )
 10 P 20 USER VOC-LINK   ( vocabulary link )
 11 P 22 USER BLK        ( block )
 12 P 24 USER >IN        ( to in )
@@ -520,12 +520,12 @@
 15 P -->
 
 35 LIST
- 0 P ( Unique Constats and Unique User Variables )
+ 0 P ( Unique Constants and Unique User Variables )
  1 P   ( screens per drive )
  2 P     DRSIZE CONSTANT SCR/DRIVE
  3 P   ( top of the initial values area for user variables )
  4 P      _UVR @ CONSTANT UVR
- 5 P   ( the flag to whether use UTF-8 multi-byte charcters )
+ 5 P   ( the flag to whether use UTF-8 multi-byte characters )
  6 P DECIMAL 52 USER UTF-8
  7 P   ( the flag to echo input or not )
  8 P         54 USER ECHO
@@ -759,7 +759,7 @@
  2 P   BFLEN + DUP LIMIT =
  3 P   IF DROP FIRST THEN DUP PREV @ - ;
  4 P  
- 5 P : BUFFER ( n --- a ; aquire buffer for block n )
+ 5 P : BUFFER ( n --- a ; acquire buffer for block n )
  6 P   USE @ DUP >R
  7 P   BEGIN +BUF UNTIL USE ! R@ @ 0<
  8 P   IF ( updated ) R@ 2+ ( data area ) R@ @ 7FFF AND ( blk # )
@@ -1416,7 +1416,7 @@
 10 P (               ~           ~   |                             )
 11 P (               |           |   |                             )
 12 P (               |-----------| -----                           )
-13 P (               | 00H | 00H | double null charcters           )
+13 P (               | 00H | 00H | double null characters          )
 14 P (               |===========|                                 )
 15 P (               | f |   n   |                                 )
 

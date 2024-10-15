@@ -4,8 +4,8 @@
 ; *                   F  O  R  T  H  8  0                    *
 ; *                                                          *
 ; *                                                          *
-; *                A FORTH langage proccessor                *
-; *              conformiting FORTH-79 Standard              *
+; *                A FORTH language processor                *
+; *               conforming FORTH-79 Standard               *
 ; *                                                          *
 ; *        ( Requires a dedicated "virtual machine" )        *
 ; *                                                          *
@@ -107,7 +107,7 @@
 ;               ~           ~   |
 ;               |           |   |
 ;               |-----------| -----
-;               | 00H | 00H | double null charcters
+;               | 00H | 00H | double null characters
 ;               |===========|
 ;               | f |   n   |
 ;               |-----------| -----
@@ -211,11 +211,11 @@ UVREND	DW	0		; STDIN
 ; ***** INTERFACE *****
 ;
 ; #4
-; ( --- f ; Take a type-state of keybord. )
+; ( --- f ; Take a type-state of keyboard. )
 CTST	DW	$+2
 	DB	4
 ; #5
-; ( --- c ; Input one character from keybord. )
+; ( --- c ; Input one character from keyboard. )
 CIN	DW	$+2
 	DB	5
 	; ADDITIONAL PART
