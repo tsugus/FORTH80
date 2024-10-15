@@ -1119,7 +1119,7 @@ PFLAG	DW	DOUSE
 ; 	===== "unofficial" user variables =====
 ;
 ; ( --- a )
-; The flag to whether use UTF-8 multi-byte charcters.
+; The flag to whether use UTF-8 multi-byte characters.
 	DB	85H,'UTF-','8'+80H
 	DW	PFLAG-8
 UTF8	DW	DOUSE
@@ -1213,7 +1213,7 @@ ENCL4	DW	SWAP
 	DW	SEMIS
 ;
 ; ( a1 a2 --- a / ff ;
-;             Search a FORCE WORD in the FORTH DICTONARY. )
+;             Search a FORCE WORD in the FORTH DICTIONARY. )
 ; a1: top address of text string searched
 ; a2: NFA at which start searching
 ; a : CFA of the found word
