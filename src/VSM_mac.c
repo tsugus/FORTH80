@@ -8,12 +8,12 @@
 /*                F O R T H 8 0  ver. 0.8.0 ~                */
 /*                                                           */
 /*                                                           */
-/*                A FORTH langage proccessor                 */
-/*              conformiting FORTH-79 Standard               */
+/*                A FORTH language processor                 */
+/*               conforming FORTH-79 Standard                */
 /*                                                           */
 /*                          for Mac                          */
 /*                                                           */
-/*                       Version 0.8.0                       */
+/*                       Version 0.8.1                       */
 /*                                                           */
 /*                                      (C) 2023-2024 Tsugu  */
 /*                                                           */
@@ -27,7 +27,7 @@
 
 #define MAJOR_V 0
 #define MINOR_V 8
-#define USER_V 0
+#define USER_V 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -905,7 +905,7 @@ int main(int argc, char *argv[])
     {
       printf("\noption\n\n");
       printf("  -h   :   Show the help of options.\n\n");
-      printf("  -s   :   Assining 1 to user variable STDIN, the program uses \"stdin\" instead of \"getch()\".\n");
+      printf("  -s   :   Assigning 1 to user variable STDIN, the program uses \"stdin\" instead of \"getch()\".\n");
       printf("           (Note. ");
       printf("This program uses \"stderr\" as the default output destination. ");
       printf("To change the output destination to \"stdout\", the value of FORTH's user variable \"PFLAG\" must be set to any non-zero number.)\n\n");
