@@ -9,7 +9,7 @@
  7 P (                                                             )
  8 P (                    S E L F - H O S T E D                    )
  9 P (                                                             )
-10 P (                        Version 0.8.2                        )
+10 P (                        Version 0.8.3                        )
 11 P (                                        (C  2023-2024 Tsugu  )
 12 P (             This software is released under the             )
 13 P (                         MIT License.                        )
@@ -110,7 +110,7 @@
  1 P HEX 000E _UVR !
  2 P    0 000E ! ( +0  release No. )
  3 P    8 0010 ! ( +2  revision No. )
- 4 P 0201 0012 ! ( +4  user version [0..255]*256+[0..25] )
+ 4 P 0301 0012 ! ( +4  user version [0..255]*256+[0..25] )
  5 P    ( 0014 ) ( +6  S0 )
  6 P    ( 0016 ) ( +8  R0 )
  7 P    ( 0018 ) ( +10 TIB )
@@ -310,15 +310,15 @@
  3 P   ?EXEC !CSP CURRENT @ CONTEXT ! (CREATE) ]
  4 P   ;CODE 50 C, END-CODE IMMEDIATE
  5 P HERE 1- LATEST PFA CFA ! ( update CFA )
- 6 P : (;CODE) ( --- )
- 7 P   R> LATEST 1 TRAVERSE 3 + ( compilation address ) ! ;
- 8 P : ; ( --- ) ?CSP COMPILE ;S SMUDGE [COMPILE] [ ; IMMEDIATE
- 9 P : DOES> ( --- a ) COMPILE (;CODE)
-10 P   [ JMP @ ] LITERAL C, [ HERE 8 + ] LITERAL , ;
-11 P   51 C, IMMEDIATE
-12 P  (   ^^ <-- HERE 8 + )
-13 P : CREATE ( --- ; CREATE <name> )
-14 P   (CREATE) SMUDGE ;CODE 52 C, END-CODE
+ 6 P : (;CODE) ( --- ) R> LATEST PFA CFA ! ;
+ 7 P : ; ( --- ) ?CSP COMPILE ;S SMUDGE [COMPILE] [ ; IMMEDIATE
+ 8 P : DOES> ( --- a ) COMPILE (;CODE)
+ 9 P   [ JMP @ ] LITERAL C, [ HERE 8 + ] LITERAL , ;
+10 P   51 C, IMMEDIATE
+11 P  (   ^^ <-- HERE 8 + )
+12 P : CREATE ( --- ; CREATE <name> )
+13 P   (CREATE) SMUDGE ;CODE 52 C, END-CODE
+14 P  
 15 P -->
 
 24 LIST
@@ -1030,7 +1030,7 @@
  3 P   2DUP + 1- -80 SWAP +! TYPE SPACE ;
  4 P  
  5 P : (CREATE) ( --- ; (CREATE  <name> ) FIND ?DUP
- 6 P   IF CR 3 - -1 TRAVERSE ID. 4 MESSAGE THEN
+ 6 P   IF CR 2+ ( cfa -> pfa ) NFA ID. 4 MESSAGE THEN
  7 P   HERE DUP C@ WIDTH @ MIN 1+ ALLOT
  8 P   DUP 0A0 TOGGLE ( smudge ) HERE 1- 80 TOGGLE ( end of name )
  9 P   LATEST , CURRENT @ ! HERE 2+ , ;
@@ -1134,7 +1134,7 @@
 69 LIST
  0 P ( Umbilical Words' Parameter Fields Update #2 )
  1 P ' (;CODE)
- 2 P : (;CODE)  R> LATEST 1 TRAVERSE 3 + ! ;
+ 2 P : (;CODE)  R> LATEST PFA CFA ! ;
  3 P WORD-UPDATE FORGET (;CODE)
  4 P ' DOES>
  5 P : DOES>  COMPILE (;CODE)
