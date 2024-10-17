@@ -203,7 +203,7 @@ void READ() // 1 sector only
 }
 
 // #10
-void WRITE() // 1 sctor only
+void WRITE() // 1 sector only
 {
   W = pop();  // starting logical sector
   BX = pop(); // address of buffer
