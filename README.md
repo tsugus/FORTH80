@@ -649,7 +649,7 @@ a1 は OS のコマンドを表す文字列の先頭アドレスで、a2 は モ
 そこで、コマンドを表す文字列を入力します。
 つまり、
 
-> PAD \<TEXT&crarr; \<command\>&crarr;
+> PAD \<TEXT:&crarr; \<command\>&crarr;
 
 で、文字列 \<command\>（スペースを含んでもよい）が FORTH80 システム内のメモリの PAD と言われる場所に格納されます。
 ただし、PAD の仕様上、80 文字までしか推奨されません。
@@ -659,7 +659,7 @@ a1 は OS のコマンドを表す文字列の先頭アドレスで、a2 は モ
 
 たとえば、
 
-> PAD \<TEXT&crarr; ls -l&crarr;
+> PAD \<TEXT:&crarr; ls -l&crarr;
 
 などとします（Mac/Linux の場合。Windows では "dir"）。
 
